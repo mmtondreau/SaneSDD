@@ -1,0 +1,25 @@
+feature: "FEAT_001_checkout_resume"
+generated_at: "2026-02-23T10:00:00"
+stories:
+  - story_id: "STORY_001"
+    order: 1
+    tasks:
+      - task_id: "TASK_001"
+        order: 1
+        depends_on: []
+        estimated_effort: "medium"
+      - task_id: "TASK_002"
+        order: 2
+        depends_on: ["TASK_001"]
+        estimated_effort: "small"
+  - story_id: "STORY_002"
+    order: 2
+    tasks:
+      - task_id: "TASK_001"
+        order: 1
+        depends_on: []
+        estimated_effort: "large"
+risks:
+  - description: "Cart merge logic may be complex"
+    severity: "medium"
+    mitigation: "Start with simple last-write-wins strategy"
