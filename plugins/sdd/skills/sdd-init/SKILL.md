@@ -19,30 +19,49 @@ Run the init command to create the SDD directory structure:
 
 Report which directories were created and which already existed.
 
-## Step 2: Detect Existing Project
+## Step 2: Ask If This Is an Existing Project
 
-After initialization, check whether this is an existing project with code by looking for source files (e.g., `*.py`, `*.ts`, `*.js`, `*.java`, `*.go`, `*.rs`, `*.rb`, `*.cs`, `*.cpp`, `*.c`, `*.swift`, `*.kt`). Glob for common source file patterns in the project root, excluding `node_modules/`, `.venv/`, `venv/`, `__pycache__/`, `.git/`, and other typical ignored directories.
+Ask the user: **"Is this an existing project with code already in it, or a brand-new project?"**
 
-If **no source files are found**, this is a fresh project. Skip to the final message.
+- If the user says this is a **new/fresh project**, skip to the Final Message.
+- If the user says this is an **existing project**, proceed to Step 3.
 
-If **source files are found**, this is an existing project. Proceed to Step 3.
+## Step 3: Generate INDEX.md First
 
-## Step 3: Generate Design Documents for Existing Projects
+For existing projects, regenerate INDEX.md immediately so it captures the current state of any existing files:
 
-You are now acting as the **System Architect**. Read the codebase and generate design documentation.
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
+```
+
+## Step 4: Ask for Existing Documentation
+
+Ask the user: **"Do you have any existing documentation (architecture docs, READMEs, wiki pages, design docs, API specs, etc.) that I should use as input for generating the design? If so, please share the file paths or paste the content."**
+
+- If the user provides file paths, read those files.
+- If the user pastes content, use it directly.
+- If the user says no or has none, proceed using only the codebase.
+
+## Step 5: Generate Design Documents
+
+You are now acting as the **System Architect**. Read the codebase (and any user-provided documentation) and generate design documentation.
 
 ### Templates
-Read these templates and use them as structural guides:
-- `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/high-level-design-template.md` — structural reference (use the design.md Structure below for the global doc)
+
+Read these templates and use them as structural guides — they are the same templates that `/sdd-design` uses:
 - `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/component-design-template.md` — for each COMP_*.md
 
 ### Process
 
-1. **Survey the codebase.** Read key files: entry points, configuration files (package.json, pyproject.toml, Cargo.toml, go.mod, etc.), directory structure, and representative source files. Understand the project's language, framework, and architecture.
+1. **Read INDEX.md** for an overview of existing project structure.
 
-2. **Identify components.** Look for natural boundaries: modules, packages, services, major classes, or layers (e.g., API, data access, business logic, UI). Each distinct area of responsibility becomes a component.
+2. **Survey the codebase.** Read key files: entry points, configuration files (package.json, pyproject.toml, Cargo.toml, go.mod, etc.), directory structure, and representative source files. Understand the project's language, framework, and architecture.
 
-3. **Generate `design/design.md`.** Write the global architecture document with this structure:
+3. **Incorporate existing documentation.** If the user provided docs in Step 4, use them as primary context. Cross-reference against the actual code to verify accuracy. Prefer information from the code when docs and code disagree.
+
+4. **Identify components.** Look for natural boundaries: modules, packages, services, major classes, or layers (e.g., API, data access, business logic, UI). Each distinct area of responsibility becomes a component.
+
+5. **Generate `design/design.md`.** Write the global architecture document with this structure:
 
 ```markdown
 # System Architecture
@@ -65,7 +84,7 @@ Read these templates and use them as structural guides:
 | <Name> | `design/COMP_<name>.md` | <1-line purpose> | Existing |
 ```
 
-4. **Generate `design/COMP_<name>.md`** for each identified component. Each COMP doc must use YAML frontmatter and include these sections:
+6. **Generate `design/COMP_<name>.md`** for each identified component, following the component design template. Each COMP doc must use YAML frontmatter:
 
 ```yaml
 ---
@@ -76,11 +95,11 @@ updated: "<today's date YYYY-MM-DD>"
 ---
 ```
 
-Sections: Purpose, Public Interface (functions/methods, events/signals), Internal Structure, Data Models, Error Handling, Dependencies, Testing Strategy.
+Sections (from the template): Purpose, Public Interface (Functions/Methods, Events/Signals), Internal Structure, Data Models, Error Handling, Dependencies, Testing Strategy.
 
-Base all content on what you observe in the actual code — do not speculate or add aspirational content. Document what exists.
+Base all content on what you observe in the actual code and any provided documentation — do not speculate or add aspirational content. Document what exists.
 
-5. **Regenerate INDEX.md:**
+7. **Regenerate INDEX.md** to capture the newly created design files:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
