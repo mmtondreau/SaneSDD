@@ -38,24 +38,26 @@ No API key is required — SDD runs entirely within Claude Code.
 
 ## Installation
 
-Install SDD as a Claude Code plugin from within any project:
+SDD is distributed as a Claude Code plugin marketplace. Add it from within a Claude Code session:
 
-```bash
-claude plugin add /path/to/sdd
+```
+/plugin marketplace add /path/to/sdd
 # or from a git repository:
-claude plugin add https://github.com/your-org/sdd.git
+/plugin marketplace add https://github.com/your-org/sdd.git
 ```
 
-This registers the SDD slash commands and `CLAUDE.md` instructions globally. The plugin's Python dependencies are installed automatically via the setup script.
+Then install the SDD plugin:
+
+```
+/plugin install sdd@sdd-marketplace
+```
 
 ### First-time Setup
 
 After installing the plugin, run the setup script to install the Python utility CLI:
 
 ```bash
-# The setup script is run automatically on plugin install,
-# but you can re-run it manually if needed:
-/path/to/sdd/scripts/setup.sh
+/path/to/sdd/plugins/sdd/scripts/setup.sh
 ```
 
 ### Development Installation
@@ -412,26 +414,31 @@ your-project/
     └── developer.md
 ```
 
-The SDD plugin itself lives separately (wherever you cloned/installed it):
+The SDD repository itself is structured as a plugin marketplace:
 
 ```
-sdd/                                          # Plugin repository
-├── .claude-plugin/plugin.json                # Plugin manifest
-├── skills/                                   # Slash command definitions
-│   ├── sdd-init/SKILL.md
-│   ├── sdd-feature/SKILL.md
-│   ├── sdd-design/SKILL.md
-│   ├── sdd-stories/SKILL.md
-│   ├── sdd-tasks/SKILL.md
-│   ├── sdd-plan/SKILL.md
-│   └── sdd-implement/
-│       ├── SKILL.md
-│       └── reference/
-│           ├── role-profiles.md
-│           └── implementation-loop.md
-├── scripts/
-│   ├── setup.sh                              # Dependency installer
-│   └── sdd-util.sh                           # Utility CLI wrapper
+sdd/                                          # Marketplace repository
+├── .claude-plugin/
+│   └── marketplace.json                      # Marketplace catalog
+├── plugins/
+│   └── sdd/                                  # The SDD plugin
+│       ├── .claude-plugin/plugin.json        # Plugin manifest
+│       ├── CLAUDE.md                         # Global SDD instructions
+│       ├── skills/                           # Slash command definitions
+│       │   ├── sdd-init/SKILL.md
+│       │   ├── sdd-feature/SKILL.md
+│       │   ├── sdd-design/SKILL.md
+│       │   ├── sdd-stories/SKILL.md
+│       │   ├── sdd-tasks/SKILL.md
+│       │   ├── sdd-plan/SKILL.md
+│       │   └── sdd-implement/
+│       │       ├── SKILL.md
+│       │       └── reference/
+│       │           ├── role-profiles.md
+│       │           └── implementation-loop.md
+│       └── scripts/
+│           ├── setup.sh                      # Dependency installer
+│           └── sdd-util.sh                   # Utility CLI wrapper
 ├── src/sdd/                                  # Utility CLI (sdd-util)
 │   ├── config.py
 │   ├── state.py
@@ -439,7 +446,6 @@ sdd/                                          # Plugin repository
 │   ├── plan_parser.py
 │   ├── index_manager.py
 │   └── util_cli.py
-├── CLAUDE.md                                 # Global SDD instructions
 └── pyproject.toml                            # Python dependencies
 ```
 

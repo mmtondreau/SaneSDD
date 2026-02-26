@@ -3,9 +3,10 @@
 # Run this once after installing the SDD plugin.
 set -euo pipefail
 
-PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Navigate from plugins/sdd/scripts/ up to the repo root where pyproject.toml lives.
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 
-cd "$PLUGIN_ROOT"
+cd "$REPO_ROOT"
 
 if command -v poetry &>/dev/null; then
     poetry install --no-interaction --quiet
