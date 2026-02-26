@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
-# Wrapper to run sdd-util from the plugin's Poetry environment.
-# Navigate from plugins/sdd/scripts/ up to the repo root where pyproject.toml lives.
-REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-exec poetry -C "$REPO_ROOT" run sdd-util "$@"
+# Wrapper to run sdd-util using the plugin's local venv.
+set -euo pipefail
+
+PLUGIN_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VENV_DIR="$PLUGIN_ROOT/.venv"
+
+# Auto-install if venv is missing
+if [ ! -d "$VENV_DIR" ]; then
+    echo "sdd-util dependencies not installed. Running setup..." >&2
+    "$PLUGIN_ROOT/scripts/setup.sh"
+fi
+
+export PYTHONPATH="${PLUGIN_ROOT}/src:${PYTHONPATH:-}"
+exec "$VENV_DIR/bin/python3" -m sdd "$@"

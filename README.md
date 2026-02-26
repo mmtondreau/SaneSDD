@@ -30,8 +30,7 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
 
 ## Requirements
 
-- **Python 3.10+**
-- **Poetry** (package manager) - [Installation guide](https://python-poetry.org/docs/#installation)
+- **Python 3.10+** (with pip)
 - **Claude Code** - [Installation guide](https://docs.anthropic.com/en/docs/claude-code/overview)
 
 No API key is required — SDD runs entirely within Claude Code.
@@ -54,11 +53,13 @@ Then install the SDD plugin:
 
 ### First-time Setup
 
-After installing the plugin, run the setup script to install the Python utility CLI:
+Dependencies are installed automatically on first use. If you prefer to install them ahead of time, run:
 
 ```bash
 /path/to/sdd/plugins/sdd/scripts/setup.sh
 ```
+
+This installs the Python CLI dependencies locally within the plugin directory using pip.
 
 ### Development Installation
 
@@ -684,10 +685,10 @@ SDD is designed to be resumable. If a session is interrupted:
 
 ## Utility CLI
 
-The `sdd-util` CLI provides deterministic state operations that the skills call via `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh"`. You can also use it directly from the plugin directory:
+The `sdd-util` CLI provides deterministic state operations that the skills call via `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh"`. You can also use it directly:
 
 ```bash
-poetry run sdd-util --help
+/path/to/plugins/sdd/scripts/sdd-util.sh --help
 ```
 
 ### Available Commands
