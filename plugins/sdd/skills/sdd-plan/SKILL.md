@@ -24,13 +24,28 @@ You are the Tech Lead. You own the development plan. You sequence stories and ta
 ## Team Overrides
 If the file `.roles/tech_lead.md` exists in the project root, read it and follow those additional instructions.
 
-## Setup
+## Pre-Checks
 
-Find the feature and workstream:
+Before proceeding, verify the required inputs exist:
+
+1. Check that the feature exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
+```
+If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
+
+2. Check that the workstream exists:
+```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
+If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
+
+3. Check that tasks exist by globbing for `<ws_feature_dir>/stories/*/TASK_*.md`.
+If no tasks are found, STOP and tell the user: "No tasks found. Run `/sdd-tasks <feature-name>` first to generate implementation tasks."
+
+## Setup
+
+The feature and workstream paths were found during pre-checks. Use those paths for the rest of this skill.
 
 ## Objective
 Produce a sequenced development plan (development_plan.yaml) that orders stories and tasks for implementation.
@@ -77,6 +92,9 @@ risks:
     mitigation: "<how to reduce the risk>"
 ```
 
+## Template
+Read the template at `reference/development-plan-template.yaml` and use it as the structural guide for the plan file.
+
 ## Output Location
 Write to: `<ws_feature_dir>/development_plan.yaml`
 
@@ -85,3 +103,7 @@ Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
+
+After regenerating the index, tell the user:
+
+> **Next step:** Run `/sdd-implement <feature-name>` to start implementation.

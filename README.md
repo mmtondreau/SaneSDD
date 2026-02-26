@@ -6,11 +6,13 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
 
 ## Table of Contents
 
+- [Quick Start](#quick-start)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Project Setup](#project-setup)
 - [Core Concepts](#core-concepts)
 - [Slash Commands](#slash-commands)
+  - [/sdd-help](#sdd-help)
   - [/sdd-init](#sdd-init)
   - [/sdd-feature](#sdd-feature)
   - [/sdd-design](#sdd-design)
@@ -18,13 +20,29 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
   - [/sdd-tasks](#sdd-tasks)
   - [/sdd-plan](#sdd-plan)
   - [/sdd-implement](#sdd-implement)
+- [Typical User Workflow](#typical-user-workflow)
 - [Directory Layout](#directory-layout)
-- [Workflow Walkthrough](#workflow-walkthrough)
 - [Frontmatter Contracts](#frontmatter-contracts)
 - [Role System](#role-system)
 - [Team Customization](#team-customization)
 - [Resumability](#resumability)
 - [Development](#development)
+
+---
+
+## Quick Start
+
+```
+/sdd-init                          # Initialize project structure
+/sdd-feature                       # Define a feature (interactive)
+/sdd-design <feature-name>         # Design the architecture (interactive)
+/sdd-stories <feature-name>        # Generate user stories
+/sdd-tasks <feature-name>          # Generate implementation tasks
+/sdd-plan <feature-name>           # Create execution plan
+/sdd-implement <feature-name>      # Implement with QA loop
+```
+
+Each command tells you what to run next when it completes. Run `/sdd-help` at any time for a full workflow overview.
 
 ---
 
@@ -102,8 +120,8 @@ mkdir .roles
 
 # Customize how the Product Manager role behaves on your project
 echo "# Custom PM Rules
-Use BDD-style acceptance criteria.
-Always include performance criteria." > .roles/product_manager.md
+Include performance criteria for data-fetching stories.
+Maximum 5 ACs per story." > .roles/product_manager.md
 ```
 
 ---
@@ -135,10 +153,22 @@ All artifacts follow linear status transitions:
 | Story    | `TODO` → `IN_PROGRESS` → `DONE` (or `BLOCKED`) |
 | Task     | `TODO` → `IN_PROGRESS` → `DONE` (or `BLOCKED`) |
 
+### Acceptance Criteria Format
+
+All acceptance criteria use **Given-When-Then** format:
+
+- **Full format:** `Given <precondition>, when <action>, then <expected result>`
+- **Short format:** `When <action>, then <expected result>` (when the precondition is obvious)
+
+Examples:
+- `Given a user with items in their cart, when they log out, then the cart is persisted to the database`
+- `When the user clicks "Resume Cart", then all previously saved items are restored`
+
 ### Specs vs Work
 
 - **`specs/`** contains the _requirements_: features and stories. These are the source of truth and persist across workstreams.
 - **`work/`** contains _execution artifacts_: designs, tasks, development plans. These are scoped to a workstream and can be regenerated.
+- **`design/`** contains _global architecture_: system-level design and component design docs. Updated across features.
 - Tasks live **only** in `work/`, never in `specs/`.
 
 ---
@@ -146,6 +176,20 @@ All artifacts follow linear status transitions:
 ## Slash Commands
 
 All commands are invoked from within a Claude Code session. SDD auto-detects the project root by walking up from the current directory looking for a `specs/` directory or `.git/` folder.
+
+Each command validates its required inputs before starting. If something is missing, it tells you exactly what to run first.
+
+### `/sdd-help`
+
+Displays the SDD workflow overview, all available commands, the role system, and tips for using SDD effectively.
+
+```
+/sdd-help
+```
+
+No prerequisites. Run this at any time.
+
+---
 
 ### `/sdd-init`
 
@@ -160,11 +204,13 @@ Initializes a new SDD project by creating the required directory structure.
 1. Creates `specs/`, `work/`, and `design/` directories (skips any that already exist)
 2. Generates an initial `INDEX.md`
 
+**Next step:** `/sdd-feature`
+
 ---
 
 ### `/sdd-feature`
 
-**Role:** Product Manager | **Mode:** Interactive
+**Role:** Product Manager | **Mode:** Interactive | **Prerequisite:** `/sdd-init`
 
 Starts an interactive session with Claude acting as a Product Manager to define a new feature specification.
 
@@ -196,13 +242,15 @@ Users lose their cart contents when they leave the site...
 - Resume-to-purchase conversion > 30%
 ```
 
+**Next step:** `/sdd-design <feature-name>`
+
 ---
 
 ### `/sdd-design`
 
-**Role:** System Architect | **Mode:** Interactive
+**Role:** System Architect | **Mode:** Interactive | **Prerequisite:** `/sdd-feature`
 
-Creates a high-level design document for a feature.
+Creates a high-level design document for a feature, along with detailed component design docs.
 
 ```
 /sdd-design FEAT_001
@@ -216,12 +264,16 @@ Creates a high-level design document for a feature.
 2. Creates a new workstream (`work/WS_NNN/FEAT_NNN_slug/`)
 3. Claude discusses architecture interactively, then writes the design
 4. Produces `work/WS_NNN/FEAT_NNN_slug/high_level_design.md`
+5. Creates or updates `design/COMP_<name>.md` for each component with full detail
+6. Updates `design/design.md` with the system-wide architecture view
+
+**Next step:** `/sdd-stories <feature-name>`
 
 ---
 
 ### `/sdd-stories`
 
-**Role:** Product Manager | **Mode:** Automated
+**Role:** Product Manager | **Mode:** Automated | **Prerequisite:** `/sdd-design`
 
 Generates user stories from the feature spec and design documents.
 
@@ -234,7 +286,7 @@ Generates user stories from the feature spec and design documents.
 
 **What happens:**
 1. Reads the feature spec and high-level design
-2. Claude generates story files with YAML frontmatter and acceptance criteria
+2. Claude generates story files with YAML frontmatter and acceptance criteria (in Given-When-Then format)
 3. Produces `specs/FEAT_NNN_slug/stories/STORY_NNN_slug.md` files
 
 **Output file example** (`specs/FEAT_001_checkout_resume/stories/STORY_001_save_cart.md`):
@@ -247,10 +299,10 @@ feature: "FEAT_001"
 depends_on: []
 acceptance_criteria:
   - id: "AC_001"
-    description: "Cart items are saved when user logs out"
+    description: "Given a user with items in their cart, when they log out, then the cart items are persisted"
     status: "TODO"
   - id: "AC_002"
-    description: "Cart is restored when user logs back in"
+    description: "When the user logs back in, then their previously saved cart is restored"
     status: "TODO"
 created: "2026-02-23"
 updated: "2026-02-23"
@@ -261,15 +313,17 @@ As a shopper, I want my cart to be saved when I leave,
 so that I can resume shopping later.
 
 ## Acceptance Criteria
-- [ ] **AC_001**: Cart items are saved when user logs out
-- [ ] **AC_002**: Cart is restored when user logs back in
+- [ ] **AC_001**: Given a user with items in their cart, when they log out, then the cart items are persisted
+- [ ] **AC_002**: When the user logs back in, then their previously saved cart is restored
 ```
+
+**Next step:** `/sdd-tasks <feature-name>`
 
 ---
 
 ### `/sdd-tasks`
 
-**Role:** Tech Lead | **Mode:** Automated
+**Role:** Tech Lead | **Mode:** Automated | **Prerequisite:** `/sdd-stories`
 
 Generates implementation tasks from stories and design documents.
 
@@ -280,18 +334,18 @@ Generates implementation tasks from stories and design documents.
 
 **Arguments:** Feature ID or name substring
 
-**Prerequisite:** An active workstream must exist (run `/sdd-design` first).
-
 **What happens:**
 1. Reads stories, feature spec, and design docs
 2. Claude generates task files mapped to specific ACs
 3. Produces `work/WS_NNN/FEAT_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
 
+**Next step:** `/sdd-plan <feature-name>`
+
 ---
 
 ### `/sdd-plan`
 
-**Role:** Tech Lead | **Mode:** Automated
+**Role:** Tech Lead | **Mode:** Automated | **Prerequisite:** `/sdd-tasks`
 
 Generates a `development_plan.yaml` that defines the execution order for all stories and tasks.
 
@@ -301,8 +355,6 @@ Generates a `development_plan.yaml` that defines the execution order for all sto
 ```
 
 **Arguments:** Feature ID or name substring
-
-**Prerequisite:** Tasks must exist (run `/sdd-tasks` first).
 
 **What happens:**
 1. Reads all stories and tasks
@@ -336,11 +388,13 @@ risks:
     mitigation: "Start with simple last-write-wins strategy"
 ```
 
+**Next step:** `/sdd-implement <feature-name>`
+
 ---
 
 ### `/sdd-implement`
 
-**Role:** Developer, Task QA, Story QA, Tech Lead | **Mode:** Automated multi-role loop
+**Role:** Developer, Task QA, Story QA, Tech Lead | **Mode:** Automated multi-role loop | **Prerequisite:** `/sdd-plan`
 
 Executes the full implementation loop, cycling through multiple roles automatically.
 
@@ -352,8 +406,6 @@ Executes the full implementation loop, cycling through multiple roles automatica
 **Arguments:**
 - First argument (required): Feature ID or name substring
 - Second argument (optional): Story filter to implement only a specific story
-
-**Prerequisite:** A development plan must exist (run `/sdd-plan` first).
 
 **What happens for each story (in plan order):**
 
@@ -375,6 +427,96 @@ Story marked IN_PROGRESS
 │
 └── Next story
 ```
+
+---
+
+## Typical User Workflow
+
+Here is the complete end-to-end workflow for building a feature:
+
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐
+│  /sdd-init  │ ──▶ │ /sdd-feature │ ──▶ │ /sdd-design  │
+│  (one-time) │     │   (PM, int.) │     │ (Arch, int.) │
+└─────────────┘     └──────────────┘     └──────────────┘
+                                                │
+                    ┌──────────────┐     ┌───────┴──────┐
+                    │ /sdd-tasks   │ ◀── │ /sdd-stories │
+                    │  (TL, auto)  │     │  (PM, auto)  │
+                    └──────┬───────┘     └──────────────┘
+                           │
+                    ┌──────┴───────┐     ┌───────────────┐
+                    │  /sdd-plan   │ ──▶ │/sdd-implement │
+                    │  (TL, auto)  │     │ (multi-role)  │
+                    └──────────────┘     └───────────────┘
+```
+
+### Step 0: Initialize the Project
+
+```
+/sdd-init
+```
+
+Creates the `specs/`, `work/`, and `design/` directories. Only needed once per project.
+
+### Step 1: Define the Feature
+
+```
+/sdd-feature
+```
+
+Interactive session. Describe what you want to build. Claude (as Product Manager) asks clarifying questions and writes a structured feature spec with success criteria.
+
+### Step 2: Create the Design
+
+```
+/sdd-design checkout_resume
+```
+
+Interactive session. Claude (as System Architect) reads the feature spec, discusses architecture with you, and produces:
+- A workstream-scoped `high_level_design.md`
+- Detailed `design/COMP_<name>.md` for each component
+- An updated `design/design.md` with the system-wide view
+
+### Step 3: Generate Stories
+
+```
+/sdd-stories checkout_resume
+```
+
+Automated. Claude (as Product Manager) breaks the feature into user stories with Given-When-Then acceptance criteria.
+
+### Step 4: Generate Tasks
+
+```
+/sdd-tasks checkout_resume
+```
+
+Automated. Claude (as Tech Lead) creates implementation tasks from the stories, each mapped to specific ACs. Verifies complete AC coverage.
+
+### Step 5: Create the Plan
+
+```
+/sdd-plan checkout_resume
+```
+
+Automated. Claude (as Tech Lead) orders all tasks respecting dependencies into an execution plan with effort estimates and risk assessment.
+
+### Step 6: Implement
+
+```
+/sdd-implement checkout_resume
+```
+
+Automated multi-role loop. For each story in plan order, Claude cycles through:
+1. **Developer** — writes code and tests
+2. **Task QA** — validates done criteria, runs tests, checks coverage
+3. **Story QA** — validates all ACs are satisfied
+4. **Tech Lead** — creates remediation tasks for any gaps
+
+### Checking Progress
+
+After each command, `INDEX.md` is automatically regenerated. Open it to see the current state of all features, workstreams, and design documents.
 
 ---
 
@@ -404,8 +546,9 @@ your-project/
 │                   └── TASK_001_allow_guest_checkout.md
 │
 ├── design/                                   # Global architecture docs
-│   ├── design.md                             # High-level architecture
-│   └── COMP_cart.md                          # Component design doc
+│   ├── design.md                             # System-wide architecture
+│   ├── COMP_cart.md                          # Component design: Cart
+│   └── COMP_session.md                       # Component design: Session
 │
 ├── CLAUDE.md                                 # Global SDD instructions (from plugin)
 ├── INDEX.md                                  # Auto-generated file index
@@ -426,12 +569,29 @@ sdd/                                          # Marketplace repository
 │       ├── .claude-plugin/plugin.json        # Plugin manifest
 │       ├── CLAUDE.md                         # Global SDD instructions
 │       ├── skills/                           # Slash command definitions
+│       │   ├── sdd-help/SKILL.md
 │       │   ├── sdd-init/SKILL.md
-│       │   ├── sdd-feature/SKILL.md
-│       │   ├── sdd-design/SKILL.md
-│       │   ├── sdd-stories/SKILL.md
-│       │   ├── sdd-tasks/SKILL.md
-│       │   ├── sdd-plan/SKILL.md
+│       │   ├── sdd-feature/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       └── feature-template.md
+│       │   ├── sdd-design/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       ├── high-level-design-template.md
+│       │   │       └── component-design-template.md
+│       │   ├── sdd-stories/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       └── story-template.md
+│       │   ├── sdd-tasks/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       └── task-template.md
+│       │   ├── sdd-plan/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       └── development-plan-template.yaml
 │       │   └── sdd-implement/
 │       │       ├── SKILL.md
 │       │       └── reference/
@@ -458,72 +618,6 @@ sdd/                                          # Marketplace repository
 | `work/` | Workstreams, designs, tasks, plans | System Architect, Tech Lead, Developer |
 | `design/` | Global architecture and component docs | System Architect |
 | `.roles/` | Team-specific role customizations | You (manual) |
-
----
-
-## Workflow Walkthrough
-
-Here is the complete end-to-end workflow for building a feature:
-
-### Step 0: Initialize the Project
-
-```
-/sdd-init
-```
-
-Creates the `specs/`, `work/`, and `design/` directories. Only needed once per project.
-
-### Step 1: Define the Feature
-
-```
-/sdd-feature
-```
-
-Interactive session. Describe what you want to build. Claude (as Product Manager) writes a structured feature spec.
-
-### Step 2: Create the Design
-
-```
-/sdd-design checkout_resume
-```
-
-Interactive session. Claude (as System Architect) reads the feature spec and creates an architecture document. Also creates the workstream directory.
-
-### Step 3: Generate Stories
-
-```
-/sdd-stories checkout_resume
-```
-
-Automated. Claude (as Product Manager) breaks the feature into user stories with acceptance criteria.
-
-### Step 4: Generate Tasks
-
-```
-/sdd-tasks checkout_resume
-```
-
-Automated. Claude (as Tech Lead) creates implementation tasks from the stories, each mapped to specific ACs.
-
-### Step 5: Create the Plan
-
-```
-/sdd-plan checkout_resume
-```
-
-Automated. Claude (as Tech Lead) orders all tasks respecting dependencies into an execution plan.
-
-### Step 6: Implement
-
-```
-/sdd-implement checkout_resume
-```
-
-Automated multi-role loop. Claude cycles through Developer → Task QA → Story QA → Tech Lead (remediation) for each story in plan order.
-
-### Checking Progress
-
-After each command, `INDEX.md` is automatically regenerated. Open it to see the current state of all features, workstreams, and design documents.
 
 ---
 
@@ -554,7 +648,7 @@ feature: "FEAT_NNN"
 depends_on: []
 acceptance_criteria:
   - id: "AC_NNN"
-    description: "<testable criterion>"
+    description: "[Given <precondition>,] when <action>, then <expected result>"
     status: "TODO"
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
@@ -576,12 +670,24 @@ updated: "YYYY-MM-DD"
 ---
 ```
 
+### Component Design Frontmatter
+
+```yaml
+---
+component: "<ComponentName>"
+depends_on: []
+stories: []
+updated: "YYYY-MM-DD"
+---
+```
+
 ### Rules
 
 - **IDs are immutable.** Once assigned, they never change or get reused.
 - **Status transitions are linear.** No skipping states (except to BLOCKED).
 - **Cross-references use IDs, not titles.** Titles can change; IDs cannot.
 - **AC IDs are scoped per story.** `AC_001` in STORY_001 is different from `AC_001` in STORY_002.
+- **ACs use Given-When-Then format.** `Given` may be omitted when the precondition is obvious.
 
 ---
 
@@ -621,7 +727,6 @@ mkdir -p .roles
 # Product Manager Overrides
 
 ## Story Format
-- Always use BDD-style acceptance criteria (Given/When/Then)
 - Include performance criteria for any data-fetching story
 - Maximum 5 ACs per story
 

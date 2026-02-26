@@ -27,13 +27,28 @@ You are the Tech Lead. You own the development plan. You bridge the gap between 
 ## Team Overrides
 If the file `.roles/tech_lead.md` exists in the project root, read it and follow those additional instructions.
 
-## Setup
+## Pre-Checks
 
-Find the feature and workstream:
+Before proceeding, verify the required inputs exist:
+
+1. Check that the feature exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
+```
+If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
+
+2. Check that the workstream exists:
+```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
+If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
+
+3. Check that stories exist by globbing for `specs/<feature_slug>/stories/STORY_*.md`.
+If no stories are found, STOP and tell the user: "No stories found. Run `/sdd-stories <feature-name>` first to generate user stories."
+
+## Setup
+
+The feature and workstream paths were found during pre-checks. Use those paths for the rest of this skill.
 
 ## Objective
 Generate implementation tasks from stories and design documents. Only target stories that are NOT marked DONE.
@@ -90,6 +105,9 @@ Body:
 - tests/test_file.py (create)
 ```
 
+## Template
+Read the template at `reference/task-template.md` and use it as the structural guide for each task file.
+
 ## Rules
 - Every AC across all non-DONE stories MUST appear in at least one task's ac_mapping.
 - A single task should be completable in one focused session.
@@ -117,3 +135,7 @@ Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
+
+After regenerating the index, tell the user:
+
+> **Next step:** Run `/sdd-plan <feature-name>` to create the execution plan.

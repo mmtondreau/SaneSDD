@@ -16,3 +16,7 @@ Run the init command to create the SDD directory structure:
 ```
 
 Report which directories were created and which already existed.
+
+After reporting, tell the user:
+
+> **Next step:** Run `/sdd-feature` to define your first feature. Run `/sdd-help` for a full workflow overview.

@@ -70,7 +70,7 @@ feature: "FEAT_NNN"
 depends_on: []
 acceptance_criteria:
   - id: "AC_NNN"
-    description: "<testable criterion>"
+    description: "[Given <precondition>,] when <action>, then <expected result>"
     status: "TODO"
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"

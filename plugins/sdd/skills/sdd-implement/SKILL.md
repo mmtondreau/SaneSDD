@@ -14,24 +14,31 @@ You will implement a feature by cycling through multiple roles for each story an
 
 For detailed role profiles, see the reference files in this skill's directory.
 
-## Setup
+## Pre-Checks
 
 Parse arguments: the first word is the feature name, the optional second word is a story filter.
 
-1. Find the feature:
+Before proceeding, verify the required inputs exist:
+
+1. Check that the feature exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature <feature-name>
 ```
+If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
 
-2. Find the workstream:
+2. Check that the workstream exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature-name>
 ```
+If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-3. Load the execution plan:
+3. Check that the development plan exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <feature-name>
 ```
+If this fails, STOP and tell the user: "No development plan found. Run `/sdd-plan <feature-name>` first to create the execution plan."
+
+## Setup
 
 The plan-json command outputs a JSON structure listing stories and tasks in execution order. Parse it and iterate through each story.
 
@@ -141,3 +148,11 @@ Report a summary of results:
 - How many stories are DONE vs incomplete
 - Any tasks that ended up BLOCKED
 - Any ACs that remain incomplete
+
+If any stories remain incomplete, tell the user:
+
+> **Next step:** Review the blocked tasks above, then re-run `/sdd-implement <feature-name>` to continue.
+
+If all stories are DONE, tell the user:
+
+> **All stories complete!** The feature implementation is finished.
