@@ -49,6 +49,7 @@ You are now acting as the **System Architect**. Read the codebase (and any user-
 ### Templates
 
 Read these templates and use them as structural guides — they are the same templates that `/sdd-design` uses:
+- `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/design-template.md` — for design/design.md
 - `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/component-design-template.md` — for each COMP_*.md
 
 ### Process
@@ -61,41 +62,9 @@ Read these templates and use them as structural guides — they are the same tem
 
 4. **Identify components.** Look for natural boundaries: modules, packages, services, major classes, or layers (e.g., API, data access, business logic, UI). Each distinct area of responsibility becomes a component.
 
-5. **Generate `design/design.md`.** Write the global architecture document with this structure:
+5. **Generate `design/design.md`** using the design template as the structural guide.
 
-```markdown
-# System Architecture
-
-## Overview
-[System-wide architectural summary based on the existing codebase.]
-
-## Component Map
-[How components relate to each other. ASCII diagram or prose description.]
-
-## System-Level Data Flow
-[How data flows across the full system.]
-
-## Cross-Cutting Concerns
-[Authentication, logging, error handling, monitoring — anything that spans components.]
-
-## Component Index
-| Component | Design Doc | Purpose | Status |
-|-----------|-----------|---------|--------|
-| <Name> | `design/COMP_<name>.md` | <1-line purpose> | Existing |
-```
-
-6. **Generate `design/COMP_<name>.md`** for each identified component, following the component design template. Each COMP doc must use YAML frontmatter:
-
-```yaml
----
-component: "<ComponentName>"
-depends_on: []
-stories: []
-updated: "<today's date YYYY-MM-DD>"
----
-```
-
-Sections (from the template): Purpose, Public Interface (Functions/Methods, Events/Signals), Internal Structure, Data Models, Error Handling, Dependencies, Testing Strategy.
+6. **Generate `design/COMP_<name>.md`** for each identified component, using the component design template as the structural guide.
 
 Base all content on what you observe in the actual code and any provided documentation — do not speculate or add aspirational content. Document what exists.
 

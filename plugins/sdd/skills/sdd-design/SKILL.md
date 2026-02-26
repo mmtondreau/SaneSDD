@@ -75,6 +75,7 @@ Produce three categories of design documents:
 Read these templates before generating output and use them as structural guides:
 - `reference/high-level-design-template.md` — for high_level_design.md
 - `reference/component-design-template.md` — for each COMP_*.md
+- `reference/design-template.md` — for design/design.md
 
 ## Process
 1. Read the feature specification: `specs/<feature_slug>/feature.md`
@@ -85,30 +86,7 @@ Read these templates before generating output and use them as structural guides:
 6. Discuss the design interactively with the user. Iterate until approved.
 7. Write `<ws_feature_dir>/high_level_design.md` using the high-level design template.
 8. For each component identified in the design, create or update `design/COMP_<name>.md` using the component design template. Each COMP doc must expand on the component's entry in high_level_design.md with full detail on: purpose, public interface, internal structure, data models, error handling, dependencies, and testing strategy.
-9. Update `design/design.md` with the system-wide architecture view. This file must include a Component Index table referencing all COMP_*.md files.
-
-## design/design.md Structure
-
-```markdown
-# System Architecture
-
-## Overview
-[System-wide architectural summary. Updated as features are added.]
-
-## Component Map
-[How components relate to each other. ASCII diagram or prose description.]
-
-## System-Level Data Flow
-[How data flows across the full system, not just one feature.]
-
-## Cross-Cutting Concerns
-[Authentication, logging, error handling, monitoring — anything that spans components.]
-
-## Component Index
-| Component | Design Doc | Purpose | Status |
-|-----------|-----------|---------|--------|
-| <Name> | `design/COMP_<name>.md` | <1-line purpose> | New / Modified / Existing |
-```
+9. Update `design/design.md` with the system-wide architecture view using the design template. This file must include a Component Index table referencing all COMP_*.md files.
 
 ## Output Locations
 - Workstream design: `<ws_feature_dir>/high_level_design.md`
