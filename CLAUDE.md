@@ -4,8 +4,8 @@ These instructions apply to EVERY role and EVERY phase.
 
 ## Utility CLI
 
-This project includes `sdd-util`, a Python CLI for deterministic state operations.
-Run with `poetry run sdd-util <command>`.
+SDD includes `sdd-util`, a Python CLI for deterministic state operations.
+Skills invoke it via `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh"`.
 
 Available commands:
 - `sdd-util init [--path DIR]` — initialize specs/, work/, design/ directories and INDEX.md

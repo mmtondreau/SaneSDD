@@ -31,8 +31,8 @@ If the file `.roles/tech_lead.md` exists in the project root, read it and follow
 
 Find the feature and workstream:
 ```bash
-poetry run sdd-util find-feature $ARGUMENTS
-poetry run sdd-util find-workstream $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
 
 ## Objective
@@ -99,7 +99,7 @@ Body:
 Create story directories and determine task numbers:
 ```bash
 # For each story that needs tasks:
-poetry run sdd-util next-task-number <ws_feature_dir>/stories/STORY_NNN
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_feature_dir>/stories/STORY_NNN
 ```
 
 ## AC Coverage Verification
@@ -115,5 +115,5 @@ Create the story subdirectory if it doesn't exist.
 ## After Completion
 Run:
 ```bash
-poetry run sdd-util regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```

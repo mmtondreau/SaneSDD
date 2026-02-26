@@ -28,8 +28,8 @@ If the file `.roles/product_manager.md` exists in the project root, read it and 
 
 Find the feature and workstream:
 ```bash
-poetry run sdd-util find-feature $ARGUMENTS
-poetry run sdd-util find-workstream $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
 
 ## Objective
@@ -86,7 +86,7 @@ As a [persona], I want [action], so that [benefit].
 
 Determine the next story number:
 ```bash
-poetry run sdd-util next-story-number <feature_dir_path>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-story-number <feature_dir_path>
 ```
 
 ## Output Location
@@ -95,5 +95,5 @@ Write files to: `specs/<feature_slug>/stories/STORY_NNN_<slug>.md`
 ## After Completion
 Run:
 ```bash
-poetry run sdd-util regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```

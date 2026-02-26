@@ -2,7 +2,7 @@
 
 A Claude Code plugin that orchestrates Claude through a phased, spec-driven development workflow. SDD maintains a living `specs/` folder as the single source of truth for requirements and a `work/` directory for execution artifacts. Each phase runs Claude as a different role (Product Manager, System Architect, Tech Lead, Developer, Story QA, Task QA) with role-specific instructions and tool restrictions.
 
-SDD is implemented as a set of [Claude Code custom slash commands](https://docs.anthropic.com/en/docs/claude-code/skills) (skills) backed by a thin Python utility CLI for deterministic state operations.
+SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/skills) and backed by a thin Python utility CLI for deterministic state operations.
 
 ## Table of Contents
 
@@ -38,25 +38,36 @@ No API key is required — SDD runs entirely within Claude Code.
 
 ## Installation
 
+Install SDD as a Claude Code plugin from within any project:
+
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd sdd
-
-# Install the utility CLI
-poetry install
-
-# Verify the utility CLI works
-poetry run sdd-util --help
+claude plugin add /path/to/sdd
+# or from a git repository:
+claude plugin add https://github.com/your-org/sdd.git
 ```
 
-The slash commands are automatically available in Claude Code when you open a session in the project directory (or any project that contains the `.claude/skills/sdd-*` directories).
+This registers the SDD slash commands and `CLAUDE.md` instructions globally. The plugin's Python dependencies are installed automatically via the setup script.
 
-To use SDD in another project, copy these into the target project:
-- `.claude/skills/` — the skill definitions
-- `CLAUDE.md` — global SDD instructions
-- `src/sdd/` — the utility CLI package
-- `pyproject.toml` — dependency and entry point configuration
+### First-time Setup
+
+After installing the plugin, run the setup script to install the Python utility CLI:
+
+```bash
+# The setup script is run automatically on plugin install,
+# but you can re-run it manually if needed:
+/path/to/sdd/scripts/setup.sh
+```
+
+### Development Installation
+
+If you're working on SDD itself:
+
+```bash
+git clone <repository-url>
+cd sdd
+poetry install
+poetry run sdd-util --help
+```
 
 ---
 
@@ -66,13 +77,6 @@ Initialize a new SDD project from within Claude Code:
 
 ```
 /sdd-init
-```
-
-Or from the command line:
-
-```bash
-poetry run sdd-util init
-poetry run sdd-util init --path /path/to/my-project
 ```
 
 This creates the required directory structure and generates an initial `INDEX.md`:
@@ -400,7 +404,20 @@ your-project/
 │   ├── design.md                             # High-level architecture
 │   └── COMP_cart.md                          # Component design doc
 │
-├── .claude/skills/                           # Claude Code slash commands
+├── CLAUDE.md                                 # Global SDD instructions (from plugin)
+├── INDEX.md                                  # Auto-generated file index
+│
+└── .roles/                                   # Optional team overrides
+    ├── product_manager.md
+    └── developer.md
+```
+
+The SDD plugin itself lives separately (wherever you cloned/installed it):
+
+```
+sdd/                                          # Plugin repository
+├── .claude-plugin/plugin.json                # Plugin manifest
+├── skills/                                   # Slash command definitions
 │   ├── sdd-init/SKILL.md
 │   ├── sdd-feature/SKILL.md
 │   ├── sdd-design/SKILL.md
@@ -412,31 +429,27 @@ your-project/
 │       └── reference/
 │           ├── role-profiles.md
 │           └── implementation-loop.md
-│
+├── scripts/
+│   ├── setup.sh                              # Dependency installer
+│   └── sdd-util.sh                           # Utility CLI wrapper
 ├── src/sdd/                                  # Utility CLI (sdd-util)
-│   ├── config.py                             # Path constants, project root detection
-│   ├── state.py                              # YAML frontmatter I/O
-│   ├── workstream.py                         # Workstream creation and lookup
-│   ├── plan_parser.py                        # development_plan.yaml parser
-│   ├── index_manager.py                      # INDEX.md auto-generation
-│   └── util_cli.py                           # CLI entry point
-│
+│   ├── config.py
+│   ├── state.py
+│   ├── workstream.py
+│   ├── plan_parser.py
+│   ├── index_manager.py
+│   └── util_cli.py
 ├── CLAUDE.md                                 # Global SDD instructions
-├── INDEX.md                                  # Auto-generated file index
-│
-└── .roles/                                   # Optional team overrides
-    ├── product_manager.md
-    └── developer.md
+└── pyproject.toml                            # Python dependencies
 ```
 
-### Key Directories
+### Key Directories (in your project)
 
 | Directory | Purpose | Managed By |
 |-----------|---------|------------|
 | `specs/` | Feature specs and stories (source of truth) | Product Manager |
 | `work/` | Workstreams, designs, tasks, plans | System Architect, Tech Lead, Developer |
 | `design/` | Global architecture and component docs | System Architect |
-| `.claude/skills/` | Slash command definitions | SDD framework |
 | `.roles/` | Team-specific role customizations | You (manual) |
 
 ---
@@ -665,7 +678,7 @@ SDD is designed to be resumable. If a session is interrupted:
 
 ## Utility CLI
 
-The `sdd-util` CLI provides deterministic state operations that the skills call via Bash. You can also use it directly:
+The `sdd-util` CLI provides deterministic state operations that the skills call via `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh"`. You can also use it directly from the plugin directory:
 
 ```bash
 poetry run sdd-util --help

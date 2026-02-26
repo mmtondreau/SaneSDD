@@ -20,17 +20,17 @@ Parse arguments: the first word is the feature name, the optional second word is
 
 1. Find the feature:
 ```bash
-poetry run sdd-util find-feature <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature <feature-name>
 ```
 
 2. Find the workstream:
 ```bash
-poetry run sdd-util find-workstream <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature-name>
 ```
 
 3. Load the execution plan:
 ```bash
-poetry run sdd-util plan-json <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <feature-name>
 ```
 
 The plan-json command outputs a JSON structure listing stories and tasks in execution order. Parse it and iterate through each story.
@@ -71,7 +71,7 @@ Key responsibilities:
 - Run linters and fix violations
 - Run tests — all must pass
 - Update the task frontmatter: set `status` to `DONE` and `updated` to today's date
-- Run `poetry run sdd-util regenerate-index`
+- Run `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index`
 
 #### Phase B: TASK QA
 
@@ -124,7 +124,7 @@ For each incomplete AC:
 
 Determine the next task number:
 ```bash
-poetry run sdd-util next-task-number <ws_story_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_story_dir>
 ```
 
 Write new task files to: `<ws_story_dir>/TASK_NNN_<slug>.md`
@@ -133,7 +133,7 @@ Write new task files to: `<ws_story_dir>/TASK_NNN_<slug>.md`
 
 Run:
 ```bash
-poetry run sdd-util regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
 Report a summary of results:

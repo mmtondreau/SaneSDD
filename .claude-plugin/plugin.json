@@ -1,0 +1,10 @@
+{
+  "name": "sdd",
+  "version": "0.1.0",
+  "description": "Spec Driven Development - orchestrates Claude through phased, role-based development workflows",
+  "author": {
+    "name": "Matthew Tondreau"
+  },
+  "license": "MIT",
+  "keywords": ["development", "specification", "workflow", "project-management"]
+}

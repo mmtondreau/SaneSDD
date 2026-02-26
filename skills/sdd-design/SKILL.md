@@ -48,12 +48,12 @@ If the file `.roles/system_architect.md` exists in the project root, read it and
 
 First, find the feature and create a workstream:
 ```bash
-poetry run sdd-util find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
 ```
 
 Use the output feature directory name (e.g., `FEAT_001_checkout_resume`) to create a workstream:
 ```bash
-poetry run sdd-util create-workstream <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" create-workstream <feature_slug>
 ```
 
 This will output the workstream feature directory path (e.g., `/path/to/work/WS_001/FEAT_001_checkout_resume/`).
@@ -113,5 +113,5 @@ Write to: `<ws_feature_dir>/high_level_design.md` (the path returned by create-w
 ## After Completion
 Run:
 ```bash
-poetry run sdd-util regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```

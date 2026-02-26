@@ -40,7 +40,7 @@ If the file `.roles/product_manager.md` exists in the project root, read it and 
 
 First, determine the next feature ID:
 ```bash
-poetry run sdd-util next-feature-number
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-feature-number
 ```
 
 This will output a number (e.g., `1`). Use it to form the ID `FEAT_<NNN>` where NNN is zero-padded to 3 digits (e.g., `FEAT_001`).
@@ -93,7 +93,7 @@ Before starting, glob for `specs/FEAT_*/feature.md` and read any existing featur
 ## After Completion
 Run:
 ```bash
-poetry run sdd-util regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
 ## User Input

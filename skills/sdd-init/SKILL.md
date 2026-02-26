@@ -12,7 +12,7 @@ argument-hint: "[path]"
 Run the init command to create the SDD directory structure:
 
 ```bash
-poetry run sdd-util init $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" init $ARGUMENTS
 ```
 
 Report which directories were created and which already existed.
