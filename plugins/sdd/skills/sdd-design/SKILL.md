@@ -7,44 +7,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "<feature-name>"
 ---
 
-# Phase: High-Level Design
+# Phase: High-Level Design (Orchestrator)
 
-## Your Role: System Architect
-
-You are the System Architect. You own the technical design. You translate feature requirements into component architectures, define interfaces, record tradeoffs, and keep design documents accurate.
-
-### Responsibilities
-- Create and maintain design/design.md (high-level architecture)
-- Create and maintain design/COMP_*.md (component-level design)
-- Create workstream-scoped high_level_design.md for each feature
-- Map design sections to story IDs and task IDs
-- Record every significant decision as: Decision, Alternatives, Rationale
-- Update design when implementation reveals the design was wrong
-
-### Hard Constraints
-- You MUST NOT write user stories or acceptance criteria. Stories belong to the Product Manager.
-- You MUST NOT write tasks. Tasks belong to the Tech Lead.
-- You MUST NOT write implementation code.
-- Tradeoff records MUST include at least two alternatives considered.
-- Every component listed in high_level_design.md MUST have a corresponding `design/COMP_<name>.md` with full detail.
-- COMP_*.md documents MUST contain MORE detail than the component's entry in high_level_design.md.
-
-### Artifacts You Own
-- design/design.md
-- design/COMP_*.md
-- work/WS_*/FEAT_*/high_level_design.md
-
-### Artifacts You May Read
-- specs/FEAT_*/feature.md
-- specs/FEAT_*/stories/STORY_*.md
-
-### Output Conventions
-- design.md uses H2 (##) sections for each major architectural area
-- COMP_*.md uses YAML frontmatter with component, depends_on, and stories fields
-- Diagrams described in prose or ASCII, no image links
-
-## Team Overrides
-If the file `.roles/system_architect.md` exists in the project root, read it and follow those additional instructions.
+You are the orchestrator for the System Architect phase. You will gather context, then dispatch a sub-agent to do the actual design work.
 
 ## Pre-Checks
 
@@ -56,49 +21,78 @@ Before proceeding, verify the required inputs exist:
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
 
+Save the output as `<feature_slug>` (e.g., `FEAT_001_checkout_resume`).
+
 ## Setup
 
-Use the output feature directory name (e.g., `FEAT_001_checkout_resume`) to create a workstream:
+Create a workstream:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" create-workstream <feature_slug>
 ```
 
-This will output the workstream feature directory path (e.g., `/path/to/work/WS_001/FEAT_001_checkout_resume/`).
+Save the output as `<ws_feature_dir>`.
 
-## Objective
-Produce three categories of design documents:
-1. **Workstream design** — `high_level_design.md` scoped to this feature
-2. **Component designs** — `design/COMP_<name>.md` for every component (new or modified)
-3. **Global architecture** — `design/design.md` updated with the system-wide view
+## Context Import
 
-## Templates
-Read these templates before generating output and use them as structural guides:
-- `reference/high-level-design-template.md` — for high_level_design.md
-- `reference/component-design-template.md` — for each COMP_*.md
-- `reference/design-template.md` — for design/design.md
+1. Read prior agent context:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --workstream <ws_feature_dir>
+```
+Save any output as `PRIOR_CONTEXT`. If empty, there is no prior context.
 
-## Process
-1. Read the feature specification: `specs/<feature_slug>/feature.md`
-2. Read any existing global design documents: `design/design.md` and `design/COMP_*.md`
-3. Identify the major components the feature requires.
-4. Define interfaces between components.
-5. Record architectural tradeoffs with rationale.
-6. Discuss the design interactively with the user. Iterate until approved.
-7. Write `<ws_feature_dir>/high_level_design.md` using the high-level design template.
-8. For each component identified in the design, create or update `design/COMP_<name>.md` using the component design template. Each COMP doc must expand on the component's entry in high_level_design.md with full detail on: purpose, public interface, internal structure, data models, error handling, dependencies, and testing strategy.
-9. Update `design/design.md` with the system-wide architecture view using the design template. This file must include a Component Index table referencing all COMP_*.md files.
+2. Get the context export path:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path system_architect --workstream <ws_feature_dir>
+```
+Save the output as `<context_export_path>`.
 
-## Output Locations
-- Workstream design: `<ws_feature_dir>/high_level_design.md`
-- Component designs: `design/COMP_<name>.md` (one per component)
-- Global architecture: `design/design.md`
+3. Check for cross-role context from the Product Manager (feature definition phase):
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --feature <feature_dir>
+```
+Where `<feature_dir>` is `specs/<feature_slug>`. Save any output as `PM_CONTEXT`.
 
-## After Completion
-Run:
+## Team Overrides
+
+Check if `.roles/system_architect.md` exists. If it does, read its contents and save as `ROLE_OVERRIDES`.
+
+## Build Sub-Agent Prompt
+
+Read the agent prompt template: `reference/agent-prompt.md`
+
+Read the design templates:
+- `reference/high-level-design-template.md`
+- `reference/component-design-template.md`
+- `reference/design-template.md`
+
+Combine all gathered context into a single prompt for the sub-agent. The prompt must include:
+
+1. The contents of `reference/agent-prompt.md`
+2. The design templates (include their contents inline so the sub-agent can reference them)
+3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
+4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
+5. `PM_CONTEXT` (if any), prefixed with "## Cross-Role Context (Product Manager)\nThe Product Manager recorded the following context during feature definition:\n"
+6. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+7. The user's arguments: `$ARGUMENTS`
+
+## Dispatch Sub-Agent
+
+Use the **Task tool** to launch a sub-agent:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"System Architect: design <feature_slug>"`
+- `prompt`: The combined prompt built above
+
+Wait for the sub-agent to complete.
+
+## Post Sub-Agent
+
+1. Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
-After regenerating the index, tell the user:
+2. Report the sub-agent's results to the user.
+
+3. Tell the user:
 
 > **Next step:** Run `/sdd-stories <feature-name>` to generate user stories from this design.

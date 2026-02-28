@@ -7,6 +7,7 @@ from pathlib import Path
 
 import click
 
+from sdd.agent_context import AgentContextManager
 from sdd.config import DESIGN_DIR, SPECS_DIR, WORK_DIR, find_project_root
 from sdd.index_manager import IndexManager
 from sdd.plan_parser import PlanParser
@@ -117,6 +118,37 @@ def regenerate_index(ctx: click.Context) -> None:
     """Regenerate INDEX.md."""
     IndexManager(ctx.obj["root"]).regenerate()
     click.echo("INDEX.md regenerated.")
+
+
+@cli.command("context-path")
+@click.argument("role")
+@click.option("--workstream", default=None, help="Workstream feature directory path")
+@click.option("--feature", default=None, help="Feature spec directory path")
+def context_path(role: str, workstream: str | None, feature: str | None) -> None:
+    """Print the context file path for an agent role."""
+    if not workstream and not feature:
+        raise click.ClickException("Provide --workstream or --feature")
+    mgr = AgentContextManager()
+    ws = Path(workstream) if workstream else None
+    feat = Path(feature) if feature else None
+    path = mgr.ensure_context_dir(role, ws_feature_dir=ws, feature_dir=feat)
+    click.echo(path)
+
+
+@cli.command("read-context")
+@click.argument("role")
+@click.option("--workstream", default=None, help="Workstream feature directory path")
+@click.option("--feature", default=None, help="Feature spec directory path")
+def read_context(role: str, workstream: str | None, feature: str | None) -> None:
+    """Print the context file contents for an agent role, or empty if not found."""
+    if not workstream and not feature:
+        raise click.ClickException("Provide --workstream or --feature")
+    mgr = AgentContextManager()
+    ws = Path(workstream) if workstream else None
+    feat = Path(feature) if feature else None
+    content = mgr.read_context(role, ws_feature_dir=ws, feature_dir=feat)
+    if content:
+        click.echo(content, nl=False)
 
 
 @cli.command("plan-json")

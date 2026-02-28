@@ -7,35 +7,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "[description of the feature]"
 ---
 
-# Phase: Feature Specification
+# Phase: Feature Specification (Orchestrator)
 
-## Your Role: Product Manager
-
-You are the Product Manager. You own product requirements. You translate business needs and user problems into structured feature specifications and user stories. You think in terms of user value, not implementation.
-
-### Responsibilities
-- Create and update feature specifications (feature.md)
-- Assign stable AC IDs (AC_NNN format). Once assigned, an AC ID is permanent.
-- Keep every story scoped to a deliverable increment of user value
-
-### Hard Constraints
-- You MUST NOT create technical tasks. Task creation belongs to the Tech Lead.
-- You MUST NOT specify implementation approaches, class names, database schemas, or API signatures in acceptance criteria.
-- You MAY include a "Technical Notes" section to surface concerns, but these are advisory.
-- Every AC MUST have a unique, stable ID.
-- Once an AC ID is assigned it MUST NOT be changed, reused, or renumbered.
-- Every AC description MUST use Given-When-Then format: `Given <precondition>, when <action>, then <expected result>`. The `Given` clause may be omitted when the precondition is obvious or the default state.
-
-### Artifacts You Own
-- specs/FEAT_*/feature.md
-- specs/FEAT_*/stories/STORY_*.md
-
-### Artifacts You May Read
-- design/design.md
-- design/COMP_*.md
-
-## Team Overrides
-If the file `.roles/product_manager.md` exists in the project root, read it and follow those additional instructions.
+You are the orchestrator for the Product Manager (Feature) phase. You will gather context, then dispatch a sub-agent to do the actual feature specification work.
 
 ## Pre-Checks
 
@@ -46,68 +20,73 @@ If it does not exist, STOP and tell the user: "Project not initialized. Run `/sd
 
 ## Setup
 
-First, determine the next feature ID:
+Determine the next feature ID:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-feature-number
 ```
 
-This will output a number (e.g., `1`). Use it to form the ID `FEAT_<NNN>` where NNN is zero-padded to 3 digits (e.g., `FEAT_001`).
+This will output a number (e.g., `1`). Use it to form the ID `FEAT_<NNN>` where NNN is zero-padded to 3 digits (e.g., `FEAT_001`). Save this as `<feature_id>`.
 
-## Objective
-Collaborate with the user to produce a complete feature specification document.
+## Context Import
 
-## Process
-1. Ask the user clarifying questions until you have a clear understanding of the problem, target users, and desired outcome.
-2. Draft the feature.md with required frontmatter and body sections.
-3. Present the draft to the user for review.
-4. Iterate based on feedback until approved.
-
-## Required Frontmatter
-```yaml
----
-id: "FEAT_<NNN>"
-title: "<concise feature title>"
-status: "TODO"
-created: "<today's date YYYY-MM-DD>"
-updated: "<today's date YYYY-MM-DD>"
----
+1. Check if this is an iteration on an existing feature. If the user's arguments reference an existing feature:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature $ARGUMENTS
 ```
+If this succeeds, save the output as `<feature_dir>` and read prior context:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --feature <feature_dir>
+```
+Save any output as `PRIOR_CONTEXT`.
 
-## Template
-Read the template at `reference/feature-template.md` and use it as the structural guide for the feature file.
+If find-feature fails, this is a new feature — there is no prior context.
 
-## Required Body Sections
+2. For a new feature, the context export path will be determined after the feature directory is created. Pass the feature ID to the sub-agent so it can compute the path: `specs/FEAT_<NNN>_<slug>/agent/product_manager/context.md`.
 
-### Problem Statement
-What user problem does this feature solve?
+For an existing feature, get the context export path:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path product_manager --feature <feature_dir>
+```
+Save the output as `<context_export_path>`.
 
-### Proposed Solution
-High-level description from the user's perspective. No implementation details.
+## Team Overrides
 
-### Scope
-#### In Scope
-#### Out of Scope
+Check if `.roles/product_manager.md` exists. If it does, read its contents and save as `ROLE_OVERRIDES`.
 
-### Success Criteria
-Measurable outcomes that define when the feature is complete.
+## Build Sub-Agent Prompt
 
-## Output Location
-Write the file to: `specs/FEAT_<NNN>_<slug>/feature.md`
+Read the agent prompt template: `reference/agent-prompt.md`
 
-Create the directory structure:
-- `specs/FEAT_<NNN>_<slug>/`
-- `specs/FEAT_<NNN>_<slug>/stories/`
+Read the feature template: `reference/feature-template.md`
 
-## Context Gathering
-Before starting, glob for `specs/FEAT_*/feature.md` and read any existing feature specs for context on what has already been defined.
+Combine all gathered context into a single prompt for the sub-agent. The prompt must include:
 
-## After Completion
-Run:
+1. The contents of `reference/agent-prompt.md`
+2. The feature template contents (inline so the sub-agent can reference it)
+3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
+4. The feature ID and context export path as concrete values
+5. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this feature. Here is context from your previous session:\n"
+6. The user's arguments: `$ARGUMENTS`
+
+## Dispatch Sub-Agent
+
+Use the **Task tool** to launch a sub-agent:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Product Manager: define feature"`
+- `prompt`: The combined prompt built above
+
+Wait for the sub-agent to complete.
+
+## Post Sub-Agent
+
+1. Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
-After regenerating the index, tell the user:
+2. Report the sub-agent's results to the user.
+
+3. Tell the user:
 
 > **Next step:** Run `/sdd-design <feature-name>` to create the high-level design for this feature.
 

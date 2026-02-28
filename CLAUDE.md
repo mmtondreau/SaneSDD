@@ -17,6 +17,17 @@ Available commands:
 - `sdd-util create-workstream <feature_slug>` — creates and prints new workstream path
 - `sdd-util regenerate-index` — regenerates INDEX.md
 - `sdd-util plan-json <feature_name>` — outputs development plan as JSON
+- `sdd-util context-path <role> --workstream <ws_feat_dir>` or `--feature <feat_dir>` — prints the agent context file path for a role
+- `sdd-util read-context <role> --workstream <ws_feat_dir>` or `--feature <feat_dir>` — prints the agent context file contents (empty if not found)
+
+## Sub-Agent Architecture
+
+Each skill acts as a **thin orchestrator** that dispatches work to a Task tool sub-agent. This keeps the main conversation context clean. Agent context is persisted between invocations:
+
+- **Context path**: `work/WS_NNN/FEAT_NNN_slug/agent/<role>/context.md` (or `specs/FEAT_NNN_slug/agent/<role>/context.md` for pre-workstream skills)
+- **Import**: At the start of each skill, prior context is read via `sdd-util read-context`
+- **Export**: Each sub-agent writes a context summary as its final step
+- **Roles**: product_manager, system_architect, tech_lead, developer, task_qa, story_qa
 
 ## Foundational Principles
 
@@ -39,6 +50,7 @@ specs/FEAT_NNN_slug/stories/STORY_NNN_slug.md  User stories
 work/WS_NNN/FEAT_NNN_slug/high_level_design.md  Workstream design
 work/WS_NNN/FEAT_NNN_slug/development_plan.yaml  Dev plan
 work/WS_NNN/FEAT_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md  Tasks
+work/WS_NNN/FEAT_NNN_slug/agent/<role>/context.md  Agent context persistence
 design/design.md                        High-level architecture (global)
 design/COMP_*.md                        Component design documents (global)
 INDEX.md                                File index (auto-generated)

@@ -7,23 +7,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "<feature-name>"
 ---
 
-# Phase: Story Generation
+# Phase: Story Generation (Orchestrator)
 
-## Your Role: Product Manager
-
-You are the Product Manager. You own product requirements. You translate business needs and user problems into structured feature specifications and user stories. You think in terms of user value, not implementation.
-
-### Hard Constraints
-- You MUST NOT create technical tasks. Task creation belongs to the Tech Lead.
-- You MUST NOT specify implementation approaches, class names, database schemas, or API signatures in acceptance criteria.
-- Every AC MUST be testable by a QA engineer without reading source code.
-- Every AC MUST have a unique, stable ID (AC_NNN format, scoped per story).
-- Once an AC ID is assigned it MUST NOT be changed, reused, or renumbered.
-- Every AC description MUST use Given-When-Then format: `Given <precondition>, when <action>, then <expected result>`. The `Given` clause may be omitted when the precondition is obvious or the default state.
-- Every story must deliver observable user value. No purely technical stories.
-
-## Team Overrides
-If the file `.roles/product_manager.md` exists in the project root, read it and follow those additional instructions.
+You are the orchestrator for the Product Manager (Stories) phase. You will gather context, then dispatch a sub-agent to do the actual story generation work.
 
 ## Pre-Checks
 
@@ -35,85 +21,81 @@ Before proceeding, verify the required inputs exist:
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
 
+Save the output as `<feature_slug>`.
+
 2. Check that a workstream with a high_level_design.md exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
-If this fails, or if `<ws_feature_dir>/high_level_design.md` does not exist, STOP and tell the user: "No design found. Run `/sdd-design <feature-name>` first to create the high-level design."
+If this fails, STOP and tell the user: "No design found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-## Setup
+Save the output as `<ws_feature_dir>`. Verify that `<ws_feature_dir>/high_level_design.md` exists. If not, STOP and tell the user: "No design found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-The feature and workstream paths were found during pre-checks. Use those paths for the rest of this skill.
+## Context Import
 
-## Objective
-Decompose the feature into user stories with acceptance criteria.
-
-## Context Gathering
-Before generating stories, read the following files:
-1. The feature spec: `specs/<feature_slug>/feature.md`
-2. Global design docs: glob for `design/design.md` and `design/COMP_*.md`
-3. The workstream design: `<ws_feature_dir>/high_level_design.md`
-4. Any existing stories: glob for `specs/<feature_slug>/stories/STORY_*.md`
-
-## Process
-1. Read the feature specification and high-level design.
-2. Identify natural increments of user value.
-3. For each increment, write a user story with ACs.
-4. Declare dependencies between stories via `depends_on`.
-5. Verify each story requires no more than 3-5 tasks.
-
-## Story File Schema
-
-Frontmatter:
-```yaml
----
-id: "STORY_NNN"
-title: "<story title>"
-status: "TODO"
-feature: "<FEAT_NNN>"
-depends_on: []
-acceptance_criteria:
-  - id: "AC_NNN"
-    description: "[Given <precondition>,] when <action>, then <expected result>"
-    status: "TODO"
-created: "<today's date YYYY-MM-DD>"
-updated: "<today's date YYYY-MM-DD>"
----
-```
-
-Body:
-```markdown
-## User Story
-As a [persona], I want [action], so that [benefit].
-
-## Acceptance Criteria
-- [ ] **AC_NNN**: [Given <precondition>,] when <action>, then <expected result>
-
-## Technical Notes
-[Optional. Non-binding observations for the Tech Lead.]
-```
-
-## Template
-Read the template at `reference/story-template.md` and use it as the structural guide for each story file.
-
-## Rules
-- depends_on MUST only reference STORY IDs from the same feature.
-- AC IDs use the format AC_NNN (e.g., AC_001, AC_002) scoped per story.
-
-Determine the next story number:
+1. Read prior agent context for the product_manager role:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-story-number <feature_dir_path>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --workstream <ws_feature_dir>
 ```
+Save any output as `PRIOR_CONTEXT`.
 
-## Output Location
-Write files to: `specs/<feature_slug>/stories/STORY_NNN_<slug>.md`
+2. Get the context export path:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path product_manager --workstream <ws_feature_dir>
+```
+Save the output as `<context_export_path>`.
 
-## After Completion
-Run:
+3. Check for cross-role context from the Product Manager (feature definition phase):
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --feature specs/<feature_slug>
+```
+Save any output as `PM_FEATURE_CONTEXT`.
+
+4. Check for cross-role context from the System Architect:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --workstream <ws_feature_dir>
+```
+Save any output as `ARCHITECT_CONTEXT`.
+
+## Team Overrides
+
+Check if `.roles/product_manager.md` exists. If it does, read its contents and save as `ROLE_OVERRIDES`.
+
+## Build Sub-Agent Prompt
+
+Read the agent prompt template: `reference/agent-prompt.md`
+
+Read the story template: `reference/story-template.md`
+
+Combine all gathered context into a single prompt for the sub-agent. The prompt must include:
+
+1. The contents of `reference/agent-prompt.md`
+2. The story template contents (inline so the sub-agent can reference it)
+3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
+4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
+5. `ARCHITECT_CONTEXT` (if any), prefixed with "## Cross-Role Context (System Architect)\nThe System Architect recorded the following context during design:\n"
+6. `PM_FEATURE_CONTEXT` (if any), prefixed with "## Cross-Role Context (Feature Definition)\nThe Product Manager recorded the following context during feature definition:\n"
+7. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+8. The user's arguments: `$ARGUMENTS`
+
+## Dispatch Sub-Agent
+
+Use the **Task tool** to launch a sub-agent:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Product Manager: generate stories"`
+- `prompt`: The combined prompt built above
+
+Wait for the sub-agent to complete.
+
+## Post Sub-Agent
+
+1. Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
-After regenerating the index, tell the user:
+2. Report the sub-agent's results to the user.
+
+3. Tell the user:
 
 > **Next step:** Run `/sdd-tasks <feature-name>` to generate implementation tasks from these stories.

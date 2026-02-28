@@ -7,25 +7,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "<feature-name>"
 ---
 
-# Phase: Task Generation
+# Phase: Task Generation (Orchestrator)
 
-## Your Role: Tech Lead
-
-You are the Tech Lead. You own the development plan. You bridge the gap between design and implementation by decomposing stories into tasks, sequencing work, and watching for spec drift and risk.
-
-### Hard Constraints
-- You MUST NOT modify feature specs or story acceptance criteria (PM owns those).
-- You MUST NOT write implementation code or tests.
-- You MUST NOT schedule a task before all its dependencies.
-- Every AC across all stories MUST be covered by at least one task's ac_mapping.
-- When you detect spec drift, flag it with affected artifact IDs.
-
-### Artifacts You Own
-- work/WS_*/FEAT_*/stories/STORY_*/TASK_*.md
-- work/WS_*/FEAT_*/development_plan.yaml
-
-## Team Overrides
-If the file `.roles/tech_lead.md` exists in the project root, read it and follow those additional instructions.
+You are the orchestrator for the Tech Lead (Tasks) phase. You will gather context, then dispatch a sub-agent to do the actual task generation work.
 
 ## Pre-Checks
 
@@ -37,105 +21,70 @@ Before proceeding, verify the required inputs exist:
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
 
+Save the output as `<feature_slug>`.
+
 2. Check that the workstream exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
+Save the output as `<ws_feature_dir>`.
+
 3. Check that stories exist by globbing for `specs/<feature_slug>/stories/STORY_*.md`.
 If no stories are found, STOP and tell the user: "No stories found. Run `/sdd-stories <feature-name>` first to generate user stories."
 
-## Setup
+## Context Import
 
-The feature and workstream paths were found during pre-checks. Use those paths for the rest of this skill.
-
-## Objective
-Generate implementation tasks from stories and design documents. Only target stories that are NOT marked DONE.
-
-## Context Gathering
-Read the following files:
-1. The feature spec: `specs/<feature_slug>/feature.md`
-2. All stories: glob for `specs/<feature_slug>/stories/STORY_*.md`
-3. Global design docs: `design/design.md` and `design/COMP_*.md`
-4. The workstream design: `<ws_feature_dir>/high_level_design.md`
-
-## Process
-1. Read all stories for the feature (skip DONE stories).
-2. Read the high-level design and global design docs.
-3. For each non-DONE story, identify technical work to satisfy its ACs.
-4. Decompose into discrete tasks (one PR per task).
-5. Map each task to the ACs it satisfies.
-6. Declare dependencies between tasks.
-7. Verify complete AC coverage.
-
-## Task File Schema
-
-Frontmatter:
-```yaml
----
-id: "TASK_NNN"
-title: "<task title>"
-status: "TODO"
-story: "STORY_NNN"
-depends_on: []
-ac_mapping: ["AC_NNN"]
-created: "<today's date YYYY-MM-DD>"
-updated: "<today's date YYYY-MM-DD>"
----
-```
-
-Body:
-```markdown
-## Description
-[What needs to be built or changed]
-
-## Done Criteria
-- [Specific, verifiable condition 1]
-- [Specific, verifiable condition 2]
-
-## Technical Approach
-[How to implement. Reference design docs.]
-
-## Test Plan
-[What tests need to be written]
-
-## Files to Create or Modify
-- src/path/to/file.py (create/modify)
-- tests/test_file.py (create)
-```
-
-## Template
-Read the template at `reference/task-template.md` and use it as the structural guide for each task file.
-
-## Rules
-- Every AC across all non-DONE stories MUST appear in at least one task's ac_mapping.
-- A single task should be completable in one focused session.
-- Task dependencies MUST respect story dependencies.
-- Each task maps to a single Pull Request.
-
-Create story directories and determine task numbers:
+1. Read prior agent context for the tech_lead role:
 ```bash
-# For each story that needs tasks:
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_feature_dir>/stories/STORY_NNN
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context tech_lead --workstream <ws_feature_dir>
 ```
+Save any output as `PRIOR_CONTEXT`.
 
-## AC Coverage Verification
-After generating all tasks, verify coverage:
-| AC ID | Mapped Tasks |
-|-------|-------------|
-Flag any gaps.
+2. Get the context export path:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path tech_lead --workstream <ws_feature_dir>
+```
+Save the output as `<context_export_path>`.
 
-## Output Location
-Write files to: `<ws_feature_dir>/stories/STORY_NNN/TASK_NNN_<slug>.md`
-Create the story subdirectory if it doesn't exist.
+## Team Overrides
 
-## After Completion
-Run:
+Check if `.roles/tech_lead.md` exists. If it does, read its contents and save as `ROLE_OVERRIDES`.
+
+## Build Sub-Agent Prompt
+
+Read the agent prompt template: `reference/agent-prompt.md`
+
+Read the task template: `reference/task-template.md`
+
+Combine all gathered context into a single prompt for the sub-agent. The prompt must include:
+
+1. The contents of `reference/agent-prompt.md`
+2. The task template contents (inline so the sub-agent can reference it)
+3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
+4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
+5. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+6. The user's arguments: `$ARGUMENTS`
+
+## Dispatch Sub-Agent
+
+Use the **Task tool** to launch a sub-agent:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Tech Lead: generate tasks"`
+- `prompt`: The combined prompt built above
+
+Wait for the sub-agent to complete.
+
+## Post Sub-Agent
+
+1. Run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
 
-After regenerating the index, tell the user:
+2. Report the sub-agent's results to the user.
+
+3. Tell the user:
 
 > **Next step:** Run `/sdd-plan <feature-name>` to create the execution plan.

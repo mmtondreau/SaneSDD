@@ -7,12 +7,9 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "<feature-name> [story-filter]"
 ---
 
-# Implementation Loop
+# Implementation Loop (Orchestrator)
 
-## Overview
-You will implement a feature by cycling through multiple roles for each story and task. This is a structured, multi-phase process. Follow it precisely.
-
-For detailed role profiles, see the reference files in this skill's directory.
+You are the orchestrator for the implementation loop. You will cycle through multiple roles by dispatching sub-agents for each phase. Each sub-agent operates in isolation with its own context. You manage the overall flow.
 
 ## Pre-Checks
 
@@ -26,11 +23,15 @@ Before proceeding, verify the required inputs exist:
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
 
+Save the output as `<feature_slug>`.
+
 2. Check that the workstream exists:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature-name>
 ```
 If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
+
+Save the output as `<ws_feature_dir>`.
 
 3. Check that the development plan exists:
 ```bash
@@ -38,25 +39,40 @@ If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <f
 ```
 If this fails, STOP and tell the user: "No development plan found. Run `/sdd-plan <feature-name>` first to create the execution plan."
 
-## Setup
-
-The plan-json command outputs a JSON structure listing stories and tasks in execution order. Parse it and iterate through each story.
+Save the JSON output as `<plan_json>`.
 
 ## Team Overrides
-Before starting, check for and read these files if they exist:
-- `.roles/developer.md`
-- `.roles/task_qa.md`
-- `.roles/story_qa.md`
-- `.roles/tech_lead.md`
 
-Follow their instructions during the corresponding phases below.
+Before starting, check for and read these files if they exist. Save each as the corresponding variable:
+- `.roles/developer.md` → `DEVELOPER_OVERRIDES`
+- `.roles/task_qa.md` → `TASK_QA_OVERRIDES`
+- `.roles/story_qa.md` → `STORY_QA_OVERRIDES`
+- `.roles/tech_lead.md` → `TECH_LEAD_OVERRIDES`
+
+## Context Import (All Roles)
+
+Read prior context for all four roles. For each role, run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context <role> --workstream <ws_feature_dir>
+```
+Where `<role>` is: `developer`, `task_qa`, `story_qa`, `tech_lead`.
+
+Save each non-empty result as `<ROLE>_PRIOR_CONTEXT`.
+
+Also get context export paths for all four roles:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path <role> --workstream <ws_feature_dir>
+```
+Save each as `<role>_context_export_path`.
 
 ## Execution Loop
 
-For each story in plan order:
+Parse `<plan_json>` to get the ordered list of stories and tasks. For each story in plan order:
 
 ### Step 1: Check Story Status
 Read the story file. If status is already `DONE`, skip it and move to the next story.
+
+If a story filter was provided, skip stories that don't match.
 
 ### Step 2: Mark Story IN_PROGRESS
 Update the story file's frontmatter: set `status` to `IN_PROGRESS` and `updated` to today's date.
@@ -65,76 +81,92 @@ Update the story file's frontmatter: set `status` to `IN_PROGRESS` and `updated`
 
 For each task in the story (in plan order), skip if status is already `DONE`:
 
-#### Phase A: DEVELOPER
+#### Phase A: DEVELOPER Sub-Agent
 
-**You are now the Developer.** Read the Developer role profile in `reference/role-profiles.md` and the implementation phase instructions in `reference/implementation-loop.md`.
+Read `reference/agent-prompt-developer.md`.
 
-Key responsibilities:
-- Read the task spec and parent story
-- Read relevant design documents (`design/design.md`, `design/COMP_*.md`)
-- Read existing code in areas you will modify
-- Implement the solution: write production code, write unit tests (80% line coverage minimum)
-- Use dependency injection for all external collaborators
-- Run linters and fix violations
-- Run tests — all must pass
-- Update the task frontmatter: set `status` to `DONE` and `updated` to today's date
-- Run `"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index`
+Build a prompt that includes:
+1. The agent-prompt-developer.md contents
+2. `DEVELOPER_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
+3. `DEVELOPER_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
+4. The task spec path, story path, feature slug, ws_feature_dir, and `developer_context_export_path` as concrete values
+5. Instruction to read the specific task file and its parent story before starting work
 
-#### Phase B: TASK QA
+Dispatch via **Task tool**:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Developer: implement <task_id>"`
+- `prompt`: The combined prompt
 
-**You are now Task QA. You MUST NOT modify any source code or test files during this phase.** Read the Task QA role profile in `reference/role-profiles.md` and the task QA instructions in `reference/implementation-loop.md`.
+Wait for completion. Update `DEVELOPER_PRIOR_CONTEXT` by reading the developer context file (it was just written by the sub-agent).
 
-Execute ALL validation steps in order:
-1. **Done Criteria Check** — Read the task spec's "Done Criteria". For each criterion, verify it is satisfied.
-2. **Test Existence Check** — Verify test files exist for each production module created or modified.
-3. **Lint Check** — Run the project's lint command. PASS if exit code 0.
-4. **Test Execution Check** — Run the project's test command. PASS if all tests pass.
-5. **Coverage Check** — Verify line coverage >= 80% for modules the task touched.
-6. **Design Documentation Check** — If the task changed any interface or architecture, verify design docs are updated.
-7. **INDEX.md Check** — Verify INDEX.md has entries for every file created or modified.
+#### Phase B: TASK QA Sub-Agent
 
-If ALL checks pass: update the task frontmatter `status` to `DONE`.
-If ANY check fails: leave status as `IN_PROGRESS` and add a `qa_notes` field to frontmatter describing what failed.
+Read `reference/agent-prompt-task-qa.md`.
+
+Build a prompt that includes:
+1. The agent-prompt-task-qa.md contents
+2. `TASK_QA_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
+3. `TASK_QA_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
+4. The task spec path, story path, feature slug, ws_feature_dir, and `task_qa_context_export_path` as concrete values
+5. Instruction to read the specific task file before starting validation
+
+Dispatch via **Task tool**:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Task QA: validate <task_id>"`
+- `prompt`: The combined prompt
+
+Wait for completion. Update `TASK_QA_PRIOR_CONTEXT` by reading the task_qa context file.
 
 #### Phase C: Check Result and Retry
 
 Re-read the task file. If status is `DONE`, move to the next task.
 
-If status is NOT `DONE`, go back to Phase A (Developer) and fix the issues noted in `qa_notes`. You have up to **3 attempts total** per task.
+If status is NOT `DONE`, go back to Phase A (Developer) and fix the issues. Include the `qa_notes` from the task frontmatter in the developer sub-agent prompt so it knows what to fix.
 
-After 3 failed attempts, set the task status to `BLOCKED` and move to the next task.
+You have up to **3 attempts total** per task. After 3 failed attempts, set the task status to `BLOCKED` and move to the next task.
 
-### Step 4: STORY QA
+### Step 4: STORY QA Sub-Agent
 
-**You are now Story QA. You MUST NOT modify any source code, test files, or spec files during this phase.** Read the Story QA role profile in `reference/role-profiles.md` and the story QA instructions in `reference/implementation-loop.md`.
+After all tasks for a story have been processed:
 
-Execute ALL validation steps:
-1. **Task Completion Check** — For each task belonging to this story, verify its status is `DONE`.
-2. **AC-to-Task Mapping Check** — For each AC, find all tasks whose `ac_mapping` includes this AC. Flag any ACs with no mapped tasks.
-3. **AC Satisfaction Check** — For each AC, examine the implementation and tests. Run relevant tests. Verdict each AC as PASS or FAIL with evidence.
-4. **Dependency Check** — For each story ID in `depends_on`, verify that story's status is `DONE`.
-5. **Regression Tests** — Run the full test suite to verify no regressions.
+Read `reference/agent-prompt-story-qa.md`.
 
-If ALL checks pass: update each AC status to `DONE` in the story frontmatter, then set story status to `DONE`.
-If ANY check fails: leave failed ACs as `TODO`. List all blocking issues.
+Build a prompt that includes:
+1. The agent-prompt-story-qa.md contents
+2. `STORY_QA_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
+3. `STORY_QA_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
+4. The story path, all task paths for this story, feature slug, ws_feature_dir, and `story_qa_context_export_path` as concrete values
+
+Dispatch via **Task tool**:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Story QA: validate <story_id>"`
+- `prompt`: The combined prompt
+
+Wait for completion. Update `STORY_QA_PRIOR_CONTEXT` by reading the story_qa context file.
 
 ### Step 5: REMEDIATION (if story not DONE)
 
-**You are now the Tech Lead.** Read the Tech Lead role profile in `reference/role-profiles.md`.
+Re-read the story file. If status is `DONE`, move to the next story.
 
-For each incomplete AC:
-1. Determine what additional work is needed.
-2. Create new TASK files for the remediation work.
-3. Map each new task to the ACs it will satisfy.
-4. Set `depends_on` for new tasks as appropriate.
-5. Set new task status to `TODO`.
+If status is NOT `DONE`:
 
-Determine the next task number:
-```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_story_dir>
-```
+Read `reference/agent-prompt-tech-lead.md`.
 
-Write new task files to: `<ws_story_dir>/TASK_NNN_<slug>.md`
+Build a prompt that includes:
+1. The agent-prompt-tech-lead.md contents
+2. `TECH_LEAD_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
+3. `TECH_LEAD_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
+4. The story path, ws_story_dir, feature slug, ws_feature_dir, and `tech_lead_context_export_path` as concrete values
+5. The list of incomplete ACs from the story file
+
+Dispatch via **Task tool**:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Tech Lead: remediate <story_id>"`
+- `prompt`: The combined prompt
+
+Wait for completion. Update `TECH_LEAD_PRIOR_CONTEXT` by reading the tech_lead context file.
+
+After remediation, the new tasks need to be processed. Re-read the story's task directory for new TASK files with status TODO, and loop back to Step 3 for those tasks.
 
 ## After All Stories
 
