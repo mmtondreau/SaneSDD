@@ -87,4 +87,4 @@ Wait for the sub-agent to complete.
 
 3. Tell the user:
 
-> **Next step:** Run `/sdd-implement <feature-name>` to start implementation.
+> **Next step:** Run `/sdd-implement <story-id>` to start implementing a story. Stories should be implemented in plan order. Use the development plan to identify the first story to implement.

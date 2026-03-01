@@ -86,6 +86,15 @@ class Document:
         return len(acs) > 0 and all(ac.status == Status.DONE for ac in acs)
 
 
+@dataclass
+class StoryLocation:
+    """Result of finding a story by name/ID/slug."""
+    story_path: Path
+    story_id: str
+    feature_dir: Path
+    feature_slug: str
+
+
 class StateManager:
     """Reads and writes YAML-frontmatter markdown files."""
 
@@ -213,6 +222,41 @@ class StateManager:
             if match:
                 max_num = max(max_num, int(match.group(1)))
         return max_num + 1
+
+    def _story_files(self) -> list[tuple[Path, Path]]:
+        """Return (feature_dir, story_file) pairs across all features."""
+        if not self.specs_dir.exists():
+            return []
+        results: list[tuple[Path, Path]] = []
+        for feat_dir in sorted(self.specs_dir.iterdir()):
+            if not feat_dir.is_dir() or not feat_dir.name.startswith("FEAT_"):
+                continue
+            stories_dir = feat_dir / "stories"
+            if stories_dir.exists():
+                results.extend(
+                    (feat_dir, f) for f in sorted(stories_dir.glob("STORY_*.md"))
+                )
+        return results
+
+    @staticmethod
+    def _extract_story_id(stem: str) -> str:
+        """Extract STORY_NNN from a filename stem like STORY_001_user_login."""
+        id_match = re.match(r"(STORY_\d{3})", stem)
+        return id_match.group(1) if id_match else stem
+
+    def find_story(self, name: str) -> StoryLocation | None:
+        """Find a story by exact ID, slug, or substring match."""
+        for feat_dir, story_file in self._story_files():
+            stem = story_file.stem
+            story_id = self._extract_story_id(stem)
+            if stem == name or story_id == name or name in stem:
+                return StoryLocation(
+                    story_path=story_file,
+                    story_id=story_id,
+                    feature_dir=feat_dir,
+                    feature_slug=feat_dir.name,
+                )
+        return None
 
     def next_feature_number(self) -> int:
         return self.next_number(self.specs_dir, r"FEAT_(\d{3})_")

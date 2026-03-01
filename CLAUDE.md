@@ -13,6 +13,7 @@ Available commands:
 - `sdd-util next-story-number <feature_dir>` — prints next STORY_NNN number
 - `sdd-util next-task-number <ws_story_dir>` — prints next TASK_NNN number
 - `sdd-util find-feature <name>` — prints the feature directory path
+- `sdd-util find-story <name>` — prints story location as JSON (story_path, story_id, feature_dir, feature_slug)
 - `sdd-util find-workstream <feature_name>` — prints the active workstream path
 - `sdd-util create-workstream <feature_slug>` — creates and prints new workstream path
 - `sdd-util regenerate-index` — regenerates INDEX.md
@@ -27,7 +28,7 @@ Each skill acts as a **thin orchestrator** that dispatches work to a Task tool s
 - **Context path**: `work/WS_NNN/FEAT_NNN_slug/agent/<role>/context.md` (or `specs/FEAT_NNN_slug/agent/<role>/context.md` for pre-workstream skills)
 - **Import**: At the start of each skill, prior context is read via `sdd-util read-context`
 - **Export**: Each sub-agent writes a context summary as its final step
-- **Roles**: product_manager, system_architect, tech_lead, developer, task_qa, story_qa
+- **Roles**: product_manager, system_architect, tech_lead, developer, code_reviewer, task_qa, story_qa
 
 ## Foundational Principles
 
@@ -98,6 +99,8 @@ status: TODO | IN_PROGRESS | DONE | BLOCKED
 story: "STORY_NNN"
 depends_on: []
 ac_mapping: ["AC_NNN"]
+code_review: "APPROVED | CHANGES_REQUESTED"  # optional, set by code reviewer
+review_notes: "<feedback>"                     # optional, set by code reviewer when requesting changes
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

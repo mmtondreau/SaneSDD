@@ -1,5 +1,17 @@
 # Implementation Phase Instructions
 
+## Overview
+
+Each invocation of `/sdd-implement <story-id>` processes a single story on a dedicated git branch. The flow per task is:
+
+```
+Developer → Code Review → Task QA → (retry from Developer if review rejects or QA fails, max 3 attempts)
+```
+
+After all tasks: Story QA validates the story. If incomplete, Tech Lead creates remediation tasks and the loop repeats.
+
+---
+
 ## Task Implementation (Developer Phase)
 
 ### Objective
@@ -28,6 +40,42 @@ Implement the assigned task to completion, satisfying all done criteria.
 - [ ] Linter reports zero violations
 - [ ] Design docs updated (if applicable)
 - [ ] INDEX.md updated
+
+### Re-invocation Notes
+When re-invoked after a code review rejection, `review_notes` from the task frontmatter will be provided. Address all feedback before resubmitting.
+
+When re-invoked after a Task QA failure, `qa_notes` from the task frontmatter will be provided. Fix all reported issues.
+
+---
+
+## Code Review
+
+### Objective
+Review the developer's code changes for quality, correctness, design adherence, and best practices.
+
+### Review Steps (execute ALL)
+
+#### 1. Design Adherence Check
+Compare implementation against design/design.md and design/COMP_*.md. Flag any divergence that wasn't documented.
+
+#### 2. Code Quality Check
+Review naming, structure, readability, and DRY principles. Flag code smells or unnecessary complexity.
+
+#### 3. Error Handling & Edge Cases
+Verify proper error handling. Flag missing edge case coverage.
+
+#### 4. Dependency Injection Check
+Verify DI is used for all external collaborators. No hard-wired service instantiation.
+
+#### 5. Test Quality Check
+Verify tests are meaningful — testing behavior, not just achieving line coverage. Flag gaps in test scenarios.
+
+#### 6. Security & Performance Check
+Flag any security issues (injection, XSS, etc.) or performance concerns.
+
+### Output
+If APPROVE: update task frontmatter `code_review` to `"APPROVED"`.
+If REQUEST_CHANGES: update task frontmatter `code_review` to `"CHANGES_REQUESTED"` and add `review_notes` with specific, actionable feedback.
 
 ---
 
@@ -62,6 +110,16 @@ Verify INDEX.md has entries for every file created or modified.
 ### Output
 If ALL checks pass: update the task frontmatter status to DONE.
 If ANY check fails: leave status as IN_PROGRESS and add a `qa_notes` field to frontmatter describing what failed.
+
+---
+
+## Retry Logic
+
+Each task gets up to **3 Developer attempts** total. The count includes retries triggered by:
+- Code review rejections (CHANGES_REQUESTED)
+- Task QA failures
+
+After 3 failed attempts, the task is marked BLOCKED and the orchestrator moves to the next task.
 
 ---
 

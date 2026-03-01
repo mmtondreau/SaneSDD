@@ -26,10 +26,11 @@ SDD (Spec Driven Development) guides you through a structured, phased workflow. 
 /sdd-stories <feature-name>        # 4. Generate user stories
 /sdd-tasks <feature-name>          # 5. Generate implementation tasks
 /sdd-plan <feature-name>           # 6. Create execution plan
-/sdd-implement <feature-name>      # 7. Implement with QA loop
+/sdd-implement <story-id>          # 7. Implement one story (on a branch)
+/sdd-merge <story-id>              # 8. Merge completed story to main
 ```
 
-Each command tells you what to run next when it completes.
+Repeat steps 7-8 for each story in the feature. Each command tells you what to run next when it completes.
 
 ### Command Reference
 
@@ -41,10 +42,13 @@ Each command tells you what to run next when it completes.
 | `/sdd-stories <name>` | Product Manager | Auto | Generate user stories with acceptance criteria |
 | `/sdd-tasks <name>` | Tech Lead | Auto | Generate implementation tasks from stories |
 | `/sdd-plan <name>` | Tech Lead | Auto | Create ordered execution plan |
-| `/sdd-implement <name>` | Multi-role | Auto | Implement: Developer → Task QA → Story QA → Remediation |
+| `/sdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Remediation |
+| `/sdd-merge <story>` | — | Auto | Merge completed story branch to main after verification |
 | `/sdd-help` | — | Info | Show this help |
 
 **`<name>`** can be a feature ID (`FEAT_001`), slug (`checkout_resume`), or substring (`checkout`).
+
+**`<story>`** can be a story ID (`STORY_001`), slug (`STORY_001_user_login`), or substring (`user_login`).
 
 ### Artifact Hierarchy
 
@@ -66,8 +70,28 @@ Feature (FEAT_NNN)           — What to build (owned by Product Manager)
 | **System Architect** | Design docs, component docs, ADRs | No stories, no tasks, no code |
 | **Tech Lead** | Tasks, plans, AC coverage | No spec changes, no code |
 | **Developer** | Code, tests, design doc updates | — |
+| **Code Reviewer** | Review code quality, design adherence | No file modifications, no test execution |
 | **Task QA** | Validate task done criteria | No file modifications |
 | **Story QA** | Validate AC satisfaction | No file modifications |
+
+### Implementation Flow (per story)
+
+```
+/sdd-implement <story-id>
+  └── Creates branch: story/STORY_NNN_slug
+      └── For each task:
+          ├── Developer implements
+          ├── Code Reviewer reviews
+          │   └── If rejected → back to Developer (with feedback)
+          ├── Task QA validates
+          │   └── If failed → back to Developer (with notes)
+          └── Max 3 developer attempts per task
+      └── Story QA validates all ACs
+          └── If incomplete → Tech Lead creates remediation tasks → loop
+/sdd-merge <story-id>
+  └── Verifies: story DONE, all tasks DONE, code review passed
+  └── Merges story branch to main
+```
 
 ### Acceptance Criteria Format
 
@@ -82,12 +106,15 @@ Create `.roles/<rolename>.md` files to customize role behavior:
 - `.roles/system_architect.md` — Affects `/sdd-design`
 - `.roles/tech_lead.md` — Affects `/sdd-tasks`, `/sdd-plan`
 - `.roles/developer.md` — Affects `/sdd-implement` (dev phase)
+- `.roles/code_reviewer.md` — Affects `/sdd-implement` (code review phase)
 - `.roles/task_qa.md` — Affects `/sdd-implement` (QA phase)
 - `.roles/story_qa.md` — Affects `/sdd-implement` (QA phase)
 
 ### Tips
 
-- **Resumability:** `/sdd-implement` skips DONE stories/tasks. Safe to re-run.
+- **Per-story workflow:** `/sdd-implement` processes one story at a time. Run it for each story, then `/sdd-merge` to merge.
+- **Branching:** Each story runs on its own `story/STORY_NNN_slug` branch. Use `/sdd-merge` to merge back to main.
+- **Resumability:** `/sdd-implement` skips DONE tasks. Safe to re-run for the same story.
 - **INDEX.md:** Auto-generated after each command. Check it for project status.
 - **Workstreams:** Running `/sdd-design` again creates a new workstream (WS_002, etc.) instead of overwriting.
 - **Pre-checks:** Each command validates its inputs and tells you what to run first if something is missing.

@@ -89,6 +89,24 @@ def find_feature(ctx: click.Context, name: str) -> None:
         raise click.ClickException(f"Feature '{name}' not found")
 
 
+@cli.command("find-story")
+@click.argument("name")
+@click.pass_context
+def find_story(ctx: click.Context, name: str) -> None:
+    """Print story location info as JSON (story_path, story_id, feature_dir, feature_slug)."""
+    state = StateManager(ctx.obj["root"])
+    result = state.find_story(name)
+    if result:
+        click.echo(json.dumps({
+            "story_path": str(result.story_path),
+            "story_id": result.story_id,
+            "feature_dir": str(result.feature_dir),
+            "feature_slug": result.feature_slug,
+        }))
+    else:
+        raise click.ClickException(f"Story '{name}' not found")
+
+
 @cli.command("find-workstream")
 @click.argument("feature_name")
 @click.pass_context

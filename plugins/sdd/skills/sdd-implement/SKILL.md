@@ -1,10 +1,10 @@
 ---
 name: sdd-implement
-description: Execute the full implementation loop for a feature. Cycles through Developer, Task QA, Story QA, and Tech Lead remediation roles for each story in plan order.
+description: Implement a single story through the Developer, Code Review, Task QA, Story QA, and Tech Lead remediation loop on a dedicated story branch.
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
-argument-hint: "<feature-name> [story-filter]"
+argument-hint: "<story-id-or-slug>"
 ---
 
 # Implementation Loop (Orchestrator)
@@ -13,73 +13,99 @@ You are the orchestrator for the implementation loop. You will cycle through mul
 
 ## Pre-Checks
 
-Parse arguments: the first word is the feature name, the optional second word is a story filter.
+Parse arguments: the argument is a story identifier (ID like `STORY_001`, slug like `STORY_001_user_login`, or substring like `user_login`).
 
 Before proceeding, verify the required inputs exist:
 
-1. Check that the feature exists:
+1. Check that the story exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-feature <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-story <argument>
 ```
-If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` first to create a feature specification."
+If this fails, STOP and tell the user: "Story not found. Run `/sdd-stories <feature-name>` first to generate user stories."
 
-Save the output as `<feature_slug>`.
+Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, and `<feature_slug>`.
 
 2. Check that the workstream exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature_slug>
 ```
 If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
 Save the output as `<ws_feature_dir>`.
 
-3. Check that the development plan exists:
+3. Check that the development plan exists and contains this story:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <feature-name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <feature_slug>
 ```
 If this fails, STOP and tell the user: "No development plan found. Run `/sdd-plan <feature-name>` first to create the execution plan."
 
-Save the JSON output as `<plan_json>`.
+Save the JSON output as `<plan_json>`. Parse it and extract only the story entry matching `<story_id>`. If the story is not in the plan, STOP and tell the user: "Story `<story_id>` is not in the development plan. Run `/sdd-plan <feature-name>` to regenerate."
+
+Save the matching story's task list as `<story_tasks>`.
 
 ## Team Overrides
 
 Before starting, check for and read these files if they exist. Save each as the corresponding variable:
 - `.roles/developer.md` → `DEVELOPER_OVERRIDES`
+- `.roles/code_reviewer.md` → `CODE_REVIEWER_OVERRIDES`
 - `.roles/task_qa.md` → `TASK_QA_OVERRIDES`
 - `.roles/story_qa.md` → `STORY_QA_OVERRIDES`
 - `.roles/tech_lead.md` → `TECH_LEAD_OVERRIDES`
 
 ## Context Import (All Roles)
 
-Read prior context for all four roles. For each role, run:
+Read prior context for all five roles. For each role, run:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context <role> --workstream <ws_feature_dir>
 ```
-Where `<role>` is: `developer`, `task_qa`, `story_qa`, `tech_lead`.
+Where `<role>` is: `developer`, `code_reviewer`, `task_qa`, `story_qa`, `tech_lead`.
 
 Save each non-empty result as `<ROLE>_PRIOR_CONTEXT`.
 
-Also get context export paths for all four roles:
+Also get context export paths for all five roles:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path <role> --workstream <ws_feature_dir>
 ```
 Save each as `<role>_context_export_path`.
 
+## Branch Setup
+
+Before processing the story, create a dedicated git branch:
+
+1. Derive the branch name from the story file. If the story file is `STORY_001_user_login.md`, the branch name is `story/STORY_001_user_login`.
+
+2. Check if the branch already exists:
+```bash
+git branch --list "story/<branch_name>"
+```
+
+3. If the branch exists, switch to it:
+```bash
+git checkout "story/<branch_name>"
+```
+This supports resuming a partially-completed story.
+
+4. If the branch does NOT exist, create and switch to it:
+```bash
+git checkout -b "story/<branch_name>"
+```
+
+5. Verify you are on the correct branch:
+```bash
+git branch --show-current
+```
+
 ## Execution Loop
 
-Parse `<plan_json>` to get the ordered list of stories and tasks. For each story in plan order:
-
 ### Step 1: Check Story Status
-Read the story file. If status is already `DONE`, skip it and move to the next story.
-
-If a story filter was provided, skip stories that don't match.
+Read the story file at `<story_path>`. If status is already `DONE`, STOP and tell the user: "Story `<story_id>` is already DONE. Run `/sdd-merge <story_id>` to merge the story branch."
 
 ### Step 2: Mark Story IN_PROGRESS
 Update the story file's frontmatter: set `status` to `IN_PROGRESS` and `updated` to today's date.
 
 ### Step 3: Process Each Task
 
-For each task in the story (in plan order), skip if status is already `DONE`:
+For each task in `<story_tasks>` (in plan order), skip if status is already `DONE`:
 
 #### Phase A: DEVELOPER Sub-Agent
 
@@ -91,6 +117,8 @@ Build a prompt that includes:
 3. `DEVELOPER_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
 4. The task spec path, story path, feature slug, ws_feature_dir, and `developer_context_export_path` as concrete values
 5. Instruction to read the specific task file and its parent story before starting work
+6. If re-invoked after a code review rejection, include the `review_notes` from the task frontmatter, prefixed with "## Code Review Feedback\n"
+7. If re-invoked after a Task QA failure, include the `qa_notes` from the task frontmatter, prefixed with "## QA Feedback\n"
 
 Dispatch via **Task tool**:
 - `subagent_type`: `"general-purpose"`
@@ -98,6 +126,32 @@ Dispatch via **Task tool**:
 - `prompt`: The combined prompt
 
 Wait for completion. Update `DEVELOPER_PRIOR_CONTEXT` by reading the developer context file (it was just written by the sub-agent).
+
+#### Phase A2: CODE REVIEWER Sub-Agent
+
+Read `reference/agent-prompt-code-reviewer.md`.
+
+Build a prompt that includes:
+1. The agent-prompt-code-reviewer.md contents
+2. `CODE_REVIEWER_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
+3. `CODE_REVIEWER_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
+4. The task spec path, story path, feature slug, ws_feature_dir, and `code_reviewer_context_export_path` as concrete values
+5. Instruction to read the specific task file and review all code changes for this task
+
+Dispatch via **Task tool**:
+- `subagent_type`: `"general-purpose"`
+- `description`: `"Code Review: review <task_id>"`
+- `prompt`: The combined prompt
+
+Wait for completion. Update `CODE_REVIEWER_PRIOR_CONTEXT` by reading the code_reviewer context file.
+
+#### Phase A3: Check Review Result
+
+Re-read the task file. Check the `code_review` frontmatter field.
+
+If `code_review` is `"APPROVED"`, proceed to Phase B (Task QA).
+
+If `code_review` is `"CHANGES_REQUESTED"`, go back to Phase A (Developer). The `review_notes` from the task frontmatter will be included in the developer prompt. This counts toward the 3-attempt limit.
 
 #### Phase B: TASK QA Sub-Agent
 
@@ -121,13 +175,13 @@ Wait for completion. Update `TASK_QA_PRIOR_CONTEXT` by reading the task_qa conte
 
 Re-read the task file. If status is `DONE`, move to the next task.
 
-If status is NOT `DONE`, go back to Phase A (Developer) and fix the issues. Include the `qa_notes` from the task frontmatter in the developer sub-agent prompt so it knows what to fix.
+If status is NOT `DONE`, go back to Phase A (Developer) to fix the issues. The `qa_notes` from the task frontmatter will be included in the developer prompt. The developer's changes will go through Code Review again before reaching Task QA.
 
-You have up to **3 attempts total** per task. After 3 failed attempts, set the task status to `BLOCKED` and move to the next task.
+You have up to **3 attempts total** per task (counting total Developer invocations regardless of whether the retry was triggered by code review rejection or QA failure). After 3 failed attempts, set the task status to `BLOCKED` and move to the next task.
 
 ### Step 4: STORY QA Sub-Agent
 
-After all tasks for a story have been processed:
+After all tasks for the story have been processed:
 
 Read `reference/agent-prompt-story-qa.md`.
 
@@ -146,7 +200,7 @@ Wait for completion. Update `STORY_QA_PRIOR_CONTEXT` by reading the story_qa con
 
 ### Step 5: REMEDIATION (if story not DONE)
 
-Re-read the story file. If status is `DONE`, move to the next story.
+Re-read the story file. If status is `DONE`, proceed to After Story Processing.
 
 If status is NOT `DONE`:
 
@@ -168,7 +222,7 @@ Wait for completion. Update `TECH_LEAD_PRIOR_CONTEXT` by reading the tech_lead c
 
 After remediation, the new tasks need to be processed. Re-read the story's task directory for new TASK files with status TODO, and loop back to Step 3 for those tasks.
 
-## After All Stories
+## After Story Processing
 
 Run:
 ```bash
@@ -176,15 +230,17 @@ Run:
 ```
 
 Report a summary of results:
-- How many stories were processed
-- How many stories are DONE vs incomplete
+- Story ID and title
+- Branch name: `story/<branch_name>`
+- How many tasks were processed
+- How many tasks are DONE vs incomplete
 - Any tasks that ended up BLOCKED
 - Any ACs that remain incomplete
 
-If any stories remain incomplete, tell the user:
+If the story is DONE, tell the user:
 
-> **Next step:** Review the blocked tasks above, then re-run `/sdd-implement <feature-name>` to continue.
+> **Story complete!** Run `/sdd-merge <story_id>` to merge the story branch to main.
 
-If all stories are DONE, tell the user:
+If the story is NOT complete, tell the user:
 
-> **All stories complete!** The feature implementation is finished.
+> **Story incomplete.** Review the blocked tasks above, then re-run `/sdd-implement <story_id>` to continue.
