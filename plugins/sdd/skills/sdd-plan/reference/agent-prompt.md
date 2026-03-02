@@ -7,7 +7,7 @@ You are the Tech Lead. You own the development plan. You sequence stories and ta
 ### Hard Constraints
 - You MUST NOT modify feature specs or story acceptance criteria (PM owns those).
 - You MUST NOT write implementation code or tests.
-- Every task defined in the workstream MUST appear in exactly one story's task list.
+- Every task defined in the epic MUST appear in exactly one story's task list.
 - No task may appear before any task it depends_on.
 - Story ordering must respect story depends_on.
 - Skip stories and tasks already marked DONE.
@@ -17,11 +17,11 @@ Produce a sequenced development plan (development_plan.yaml) that orders stories
 
 ## Context Gathering
 Read the following files:
-1. The feature spec: `specs/<feature_slug>/feature.md`
-2. All stories: glob for `specs/<feature_slug>/stories/STORY_*.md`
-3. Global design docs: `design/design.md` and `design/COMP_*.md`
-4. The workstream design: `<ws_feature_dir>/high_level_design.md`
-5. All tasks: glob for `<ws_feature_dir>/stories/*/TASK_*.md`
+1. The feature spec: find it via `find-feature` (may be under `specs/THEME_*/features/` or `specs/`)
+2. All work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
+3. Global design docs: `design/design.md` and `design/DOMAIN_*/COMP_*.md`
+4. The epic design: `<epic_dir>/high_level_design.md`
+5. All tasks: glob for `<epic_dir>/stories/*/TASK_*.md`
 
 ## Process
 1. Read all stories, tasks, and design docs.
@@ -32,7 +32,7 @@ Read the following files:
 
 ## Plan YAML Schema
 ```yaml
-feature: "FEAT_NNN"
+epic: "EPIC_NNN"
 generated_at: "ISO-8601 timestamp"
 stories:
   - story_id: "STORY_NNN"
@@ -58,7 +58,7 @@ risks:
 ```
 
 ## Output Location
-Write to: `<ws_feature_dir>/development_plan.yaml`
+Write to: `<epic_dir>/development_plan.yaml`
 
 ## Context Export
 
@@ -71,7 +71,7 @@ The file MUST follow this structure:
 role: "tech_lead"
 skill: "sdd-plan"
 feature: "<FEAT_NNN>"
-workstream: "<WS_NNN>"
+epic: "<EPIC_NNN>"
 last_updated: "<today's date as YYYY-MM-DDTHH:MM:SS>"
 invocation_count: <N+1 if prior context existed, else 1>
 ---

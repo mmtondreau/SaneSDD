@@ -38,11 +38,11 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 |---------|------|------|-------------|
 | `/sdd-init` | — | Auto | Create `specs/`, `work/`, `design/` directories and `INDEX.md` |
 | `/sdd-feature` | Product Manager | Interactive | Define a new feature specification |
-| `/sdd-design <name>` | System Architect | Interactive | Create high-level design + component docs |
-| `/sdd-stories <name>` | Product Manager | Auto | Generate user stories with acceptance criteria |
-| `/sdd-tasks <name>` | Tech Lead | Auto | Generate implementation tasks from stories |
+| `/sdd-design <name>` | System Architect | Interactive | Create high-level design, set up epic + domain components |
+| `/sdd-stories <name>` | Product Manager | Auto | Generate work stories with acceptance criteria (in epic) |
+| `/sdd-tasks <name>` | Tech Lead | Auto | Generate implementation tasks from work stories |
 | `/sdd-plan <name>` | Tech Lead | Auto | Create ordered execution plan |
-| `/sdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Remediation |
+| `/sdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Promote to Spec |
 | `/sdd-merge <story>` | — | Auto | Merge completed story branch to main after verification |
 | `/sdd-help` | — | Info | Show this help |
 
@@ -50,17 +50,39 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 
 **`<story>`** can be a story ID (`STORY_001`), slug (`STORY_001_user_login`), or substring (`user_login`).
 
-### Artifact Hierarchy
+### Three Channels
 
+**Spec Channel** — Living documentation of the system as it currently exists:
 ```
-Feature (FEAT_NNN)           — What to build (owned by Product Manager)
-  └── Story (STORY_NNN)      — User-facing behavior with ACs
-        └── Task (TASK_NNN)   — Developer implementation unit (lives in work/)
+specs/
+  THEME_NNN_slug/              — Groups related features
+    features/
+      FEAT_NNN_slug/           — Feature specification
+        stories/               — Promoted stories (current system state)
 ```
 
-- **specs/** holds features and stories (source of truth, persists across workstreams)
-- **work/** holds designs, tasks, and plans (scoped to a workstream)
-- **design/** holds global architecture and component docs
+**Work Channel** — Execution: planned changes being implemented:
+```
+work/
+  EPIC_NNN_slug/               — Unit of planned change
+    stories/
+      STORY_NNN_slug/          — Work story with ACs
+        TASK_NNN_slug.md       — Developer implementation unit
+    high_level_design.md
+    development_plan.yaml
+```
+
+**Design Channel** — Domain-driven architecture documentation:
+```
+design/
+  design.md                    — System-wide architecture
+  DOMAIN_NNN_slug/             — Bounded context
+    COMP_slug.md               — Component within domain
+```
+
+- **specs/** is updated after implementation (stories promoted from work)
+- **work/** is where active development happens (epics, stories, tasks)
+- **design/** is updated after task completion
 
 ### Role System
 
@@ -116,5 +138,6 @@ Create `.roles/<rolename>.md` files to customize role behavior:
 - **Branching:** Each story runs on its own `story/STORY_NNN_slug` branch. Use `/sdd-merge` to merge back to main.
 - **Resumability:** `/sdd-implement` skips DONE tasks. Safe to re-run for the same story.
 - **INDEX.md:** Auto-generated after each command. Check it for project status.
-- **Workstreams:** Running `/sdd-design` again creates a new workstream (WS_002, etc.) instead of overwriting.
+- **Epics:** Running `/sdd-design` creates an epic in `work/`. Each epic is an independent unit of change.
+- **Promotion:** When a work story passes Story QA, it is automatically promoted to the spec channel as living documentation.
 - **Pre-checks:** Each command validates its inputs and tells you what to run first if something is missing.

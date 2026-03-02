@@ -57,7 +57,7 @@ class TestAgentContextManager:
 
     def test_context_path_requires_dir(self) -> None:
         mgr = AgentContextManager()
-        with pytest.raises(ValueError, match="Either ws_feature_dir or feature_dir"):
+        with pytest.raises(ValueError, match="Provide epic_dir, theme_dir, ws_feature_dir, or feature_dir"):
             mgr.context_path("system_architect")
 
     def test_read_context_returns_none_when_missing(self, tmp_path: Path) -> None:
@@ -126,7 +126,7 @@ class TestContextPathCli:
         runner = CliRunner()
         result = runner.invoke(cli, ["context-path", "system_architect"])
         assert result.exit_code != 0
-        assert "Provide --workstream or --feature" in result.output
+        assert "Provide --epic, --theme, --workstream, or --feature" in result.output
 
     def test_creates_parent_dirs(self, tmp_path: Path) -> None:
         ws_dir = tmp_path / "work" / "WS_001" / "FEAT_001_slug"
@@ -168,4 +168,4 @@ class TestReadContextCli:
         runner = CliRunner()
         result = runner.invoke(cli, ["read-context", "system_architect"])
         assert result.exit_code != 0
-        assert "Provide --workstream or --feature" in result.output
+        assert "Provide --epic, --theme, --workstream, or --feature" in result.output

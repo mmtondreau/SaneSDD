@@ -57,7 +57,7 @@ The file MUST follow this structure:
 role: "task_qa"
 skill: "sdd-implement"
 feature: "<FEAT_NNN>"
-workstream: "<WS_NNN>"
+epic: "<EPIC_NNN>"
 last_updated: "<today's date as YYYY-MM-DDTHH:MM:SS>"
 invocation_count: <N+1 if prior context existed, else 1>
 ---

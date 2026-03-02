@@ -2,7 +2,8 @@
 id: "STORY_NNN"
 title: "<Story title — describes user-facing behavior>"
 status: "TODO"
-feature: "FEAT_NNN"
+epic: "EPIC_NNN"
+spec_feature: "FEAT_NNN"
 depends_on: []
 acceptance_criteria:
   - id: "AC_001"

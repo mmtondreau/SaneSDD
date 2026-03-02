@@ -24,10 +24,10 @@ You are the Tech Lead. You analyze incomplete acceptance criteria after Story QA
 
 Determine the next task number:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_story_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <epic_story_dir>
 ```
 
-Write new task files to: `<ws_story_dir>/TASK_NNN_<slug>.md`
+Write new task files to: `<epic_story_dir>/TASK_NNN_<slug>.md`
 
 ## Task File Schema
 
@@ -55,7 +55,7 @@ The file MUST follow this structure:
 role: "tech_lead"
 skill: "sdd-implement"
 feature: "<FEAT_NNN>"
-workstream: "<WS_NNN>"
+epic: "<EPIC_NNN>"
 last_updated: "<today's date as YYYY-MM-DDTHH:MM:SS>"
 invocation_count: <N+1 if prior context existed, else 1>
 ---

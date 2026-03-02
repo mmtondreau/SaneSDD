@@ -1,6 +1,6 @@
 ---
 name: sdd-stories
-description: Generate user stories from a feature spec and design. Use after /sdd-design to decompose a feature into stories with acceptance criteria.
+description: Generate user stories from a feature spec and design. Use after /sdd-design to decompose a feature into stories with acceptance criteria. Stories are created in the work channel (epic).
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
@@ -23,25 +23,25 @@ If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` fi
 
 Save the output as `<feature_slug>`.
 
-2. Check that a workstream with a high_level_design.md exists:
+2. Check that an epic with a high_level_design.md exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-epic $ARGUMENTS
 ```
-If this fails, STOP and tell the user: "No design found. Run `/sdd-design <feature-name>` first to create the high-level design."
+If this fails, STOP and tell the user: "No epic found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-Save the output as `<ws_feature_dir>`. Verify that `<ws_feature_dir>/high_level_design.md` exists. If not, STOP and tell the user: "No design found. Run `/sdd-design <feature-name>` first to create the high-level design."
+Save the output as `<epic_dir>`. Verify that `<epic_dir>/high_level_design.md` exists. If not, STOP and tell the user: "No epic found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
 ## Context Import
 
 1. Read prior agent context for the product_manager role:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context product_manager --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path product_manager --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path product_manager --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
@@ -53,7 +53,7 @@ Save any output as `PM_FEATURE_CONTEXT`.
 
 4. Check for cross-role context from the System Architect:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --epic <epic_dir>
 ```
 Save any output as `ARCHITECT_CONTEXT`.
 
@@ -72,10 +72,10 @@ Combine all gathered context into a single prompt for the sub-agent. The prompt 
 1. The contents of `reference/agent-prompt.md`
 2. The story template contents (inline so the sub-agent can reference it)
 3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
-4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
+4. The feature slug, epic directory path, and context export path as concrete values (replace all placeholders)
 5. `ARCHITECT_CONTEXT` (if any), prefixed with "## Cross-Role Context (System Architect)\nThe System Architect recorded the following context during design:\n"
 6. `PM_FEATURE_CONTEXT` (if any), prefixed with "## Cross-Role Context (Feature Definition)\nThe Product Manager recorded the following context during feature definition:\n"
-7. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+7. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this epic. Here is context from your previous session:\n"
 8. The user's arguments: `$ARGUMENTS`
 
 ## Dispatch Sub-Agent

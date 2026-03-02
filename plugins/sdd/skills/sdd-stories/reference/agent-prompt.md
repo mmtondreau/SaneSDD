@@ -18,10 +18,10 @@ Decompose the feature into user stories with acceptance criteria.
 
 ## Context Gathering
 Before generating stories, read the following files:
-1. The feature spec: `specs/<feature_slug>/feature.md`
-2. Global design docs: glob for `design/design.md` and `design/COMP_*.md`
-3. The workstream design: `<ws_feature_dir>/high_level_design.md`
-4. Any existing stories: glob for `specs/<feature_slug>/stories/STORY_*.md`
+1. The feature spec: find it via `find-feature` (may be under `specs/THEME_*/features/` or `specs/`)
+2. Global design docs: glob for `design/design.md` and `design/DOMAIN_*/COMP_*.md`
+3. The epic design: `<epic_dir>/high_level_design.md`
+4. Any existing work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
 
 ## Process
 1. Read the feature specification and high-level design.
@@ -32,13 +32,16 @@ Before generating stories, read the following files:
 
 ## Story File Schema
 
+Work stories are created in the epic directory (work channel), not in specs. Each story gets its own directory.
+
 Frontmatter:
 ```yaml
 ---
 id: "STORY_NNN"
 title: "<story title>"
 status: "TODO"
-feature: "<FEAT_NNN>"
+epic: "<EPIC_NNN>"
+spec_feature: "<FEAT_NNN>"
 depends_on: []
 acceptance_criteria:
   - id: "AC_NNN"
@@ -62,16 +65,18 @@ As a [persona], I want [action], so that [benefit].
 ```
 
 ## Rules
-- depends_on MUST only reference STORY IDs from the same feature.
+- depends_on MUST only reference STORY IDs from the same epic.
 - AC IDs use the format AC_NNN (e.g., AC_001, AC_002) scoped per story.
+- The `spec_feature` field references which spec-channel feature this story relates to. This is used for promotion after implementation.
 
-Determine the next story number:
+Determine the next story number. Create a story directory for each story:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-story-number <feature_dir_path>
+# Story directories live under the epic
+mkdir -p <epic_dir>/stories/STORY_NNN_<slug>
 ```
 
 ## Output Location
-Write files to: `specs/<feature_slug>/stories/STORY_NNN_<slug>.md`
+Write files to: `<epic_dir>/stories/STORY_NNN_<slug>/story.md`
 
 ## Context Export
 
@@ -84,7 +89,7 @@ The file MUST follow this structure:
 role: "product_manager"
 skill: "sdd-stories"
 feature: "<FEAT_NNN>"
-workstream: "<WS_NNN>"
+epic: "<EPIC_NNN>"
 last_updated: "<today's date as YYYY-MM-DDTHH:MM:SS>"
 invocation_count: <N+1 if prior context existed, else 1>
 ---

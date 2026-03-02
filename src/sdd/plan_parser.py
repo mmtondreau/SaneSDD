@@ -7,8 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from sdd.state import StateManager
-from sdd.workstream import WorkstreamManager
+from sdd.epic_manager import EpicManager
 
 
 @dataclass(frozen=True)
@@ -30,8 +29,8 @@ class StoryRef:
 
 @dataclass(frozen=True)
 class DevelopmentPlan:
-    """Parsed development_plan.yaml for a feature."""
-    feature_name: str
+    """Parsed development_plan.yaml for an epic."""
+    epic_name: str
     stories: tuple[StoryRef, ...]
 
 
@@ -40,7 +39,7 @@ class PlanParser:
 
     Expected YAML structure:
 
-        feature: FEAT_001_checkout_resume
+        epic: EPIC_001_checkout_resume
         stories:
           - story_id: STORY_001
             order: 1
@@ -54,21 +53,22 @@ class PlanParser:
             tasks:
               - task_id: TASK_001
                 order: 1
+
+    Also supports the legacy 'feature' key for backward compatibility.
     """
 
     def __init__(self, project_root: Path) -> None:
         self._root = project_root
-        self._state = StateManager(project_root)
-        self._ws = WorkstreamManager(project_root)
+        self._epics = EpicManager(project_root)
 
-    def load(self, feature_name: str) -> DevelopmentPlan:
-        ws_feat_dir = self._ws.find_active(feature_name)
-        if not ws_feat_dir:
+    def load(self, epic_name: str) -> DevelopmentPlan:
+        epic_dir = self._epics.find_epic(epic_name)
+        if not epic_dir:
             raise FileNotFoundError(
-                f"No active workstream for '{feature_name}'. Run `sdd design` first."
+                f"No epic found for '{epic_name}'. Run `sdd design` first."
             )
 
-        plan_path = ws_feat_dir / "development_plan.yaml"
+        plan_path = epic_dir / "development_plan.yaml"
         if not plan_path.exists():
             raise FileNotFoundError(
                 f"No development plan at {plan_path}. Run `sdd plan` first."
@@ -77,19 +77,17 @@ class PlanParser:
         with open(plan_path, encoding="utf-8") as f:
             raw = yaml.safe_load(f)
 
-        feature_slug = raw.get("feature", feature_name)
-        feat_dir = self._state.find_feature_dir(feature_slug)
+        epic_slug = raw.get("epic", raw.get("feature", epic_name))
 
         parsed_stories: list[StoryRef] = []
         for story_raw in sorted(raw.get("stories", []), key=lambda s: s["order"]):
             sid = story_raw["story_id"]
-            story_path = self._resolve_story_path(feat_dir, sid)
+            story_path = self._resolve_story_path(epic_dir, sid)
 
             parsed_tasks: list[TaskRef] = []
             for task_raw in sorted(story_raw.get("tasks", []), key=lambda t: t["order"]):
                 tid = task_raw["task_id"]
-                # Find the actual task file (may have a slug suffix)
-                task_path = self._resolve_task_path(ws_feat_dir, sid, tid)
+                task_path = self._resolve_task_path(epic_dir, sid, tid)
                 parsed_tasks.append(TaskRef(
                     task_id=tid,
                     task_path=task_path,
@@ -104,23 +102,31 @@ class PlanParser:
             ))
 
         return DevelopmentPlan(
-            feature_name=feature_slug,
+            epic_name=epic_slug,
             stories=tuple(parsed_stories),
         )
 
-    def _resolve_story_path(self, feat_dir: Path | None, story_id: str) -> Path:
-        if not feat_dir:
-            raise FileNotFoundError("Feature directory not found")
-        stories_dir = feat_dir / "stories"
-        for f in stories_dir.glob(f"{story_id}*.md"):
-            return f
+    def _resolve_story_path(self, epic_dir: Path, story_id: str) -> Path:
+        """Resolve a story path within the epic's stories directory."""
+        stories_dir = epic_dir / "stories"
+        # Work stories live in STORY_NNN/story.md
+        story_dir = stories_dir / story_id
+        if story_dir.is_dir():
+            story_md = story_dir / "story.md"
+            if story_md.exists():
+                return story_md
+        # Try with slug suffix on story dir
+        for d in stories_dir.iterdir():
+            if d.is_dir() and d.name.startswith(story_id):
+                story_md = d / "story.md"
+                if story_md.exists():
+                    return story_md
         raise FileNotFoundError(f"Story {story_id} not found in {stories_dir}")
 
-    def _resolve_task_path(self, ws_feat_dir: Path, story_id: str, task_id: str) -> Path:
-        task_dir = ws_feat_dir / "stories" / story_id
+    def _resolve_task_path(self, epic_dir: Path, story_id: str, task_id: str) -> Path:
+        task_dir = epic_dir / "stories" / story_id
         if not task_dir.exists():
-            # Try with slug suffix on story dir
-            parent = ws_feat_dir / "stories"
+            parent = epic_dir / "stories"
             for d in parent.iterdir():
                 if d.is_dir() and d.name.startswith(story_id):
                     task_dir = d
@@ -128,5 +134,4 @@ class PlanParser:
 
         for f in task_dir.glob(f"{task_id}*.md"):
             return f
-        # Fall back to exact path
         return task_dir / f"{task_id}.md"

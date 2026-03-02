@@ -23,28 +23,28 @@ If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` fi
 
 Save the output as `<feature_slug>`.
 
-2. Check that the workstream exists:
+2. Check that the epic exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-epic $ARGUMENTS
 ```
-If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
+If this fails, STOP and tell the user: "No epic found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-Save the output as `<ws_feature_dir>`.
+Save the output as `<epic_dir>`.
 
-3. Check that stories exist by globbing for `specs/<feature_slug>/stories/STORY_*.md`.
+3. Check that stories exist by globbing for `<epic_dir>/stories/STORY_*/story.md`.
 If no stories are found, STOP and tell the user: "No stories found. Run `/sdd-stories <feature-name>` first to generate user stories."
 
 ## Context Import
 
 1. Read prior agent context for the tech_lead role:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context tech_lead --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context tech_lead --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path tech_lead --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path tech_lead --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
@@ -63,8 +63,8 @@ Combine all gathered context into a single prompt for the sub-agent. The prompt 
 1. The contents of `reference/agent-prompt.md`
 2. The task template contents (inline so the sub-agent can reference it)
 3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
-4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
-5. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+4. The feature slug, epic directory path, and context export path as concrete values (replace all placeholders)
+5. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this epic. Here is context from your previous session:\n"
 6. The user's arguments: `$ARGUMENTS`
 
 ## Dispatch Sub-Agent

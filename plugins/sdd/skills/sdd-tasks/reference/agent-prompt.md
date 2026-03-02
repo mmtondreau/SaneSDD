@@ -12,18 +12,18 @@ You are the Tech Lead. You own the development plan. You bridge the gap between 
 - When you detect spec drift, flag it with affected artifact IDs.
 
 ### Artifacts You Own
-- work/WS_*/FEAT_*/stories/STORY_*/TASK_*.md
-- work/WS_*/FEAT_*/development_plan.yaml
+- work/EPIC_*/stories/STORY_*/TASK_*.md
+- work/EPIC_*/development_plan.yaml
 
 ## Objective
 Generate implementation tasks from stories and design documents. Only target stories that are NOT marked DONE.
 
 ## Context Gathering
 Read the following files:
-1. The feature spec: `specs/<feature_slug>/feature.md`
-2. All stories: glob for `specs/<feature_slug>/stories/STORY_*.md`
-3. Global design docs: `design/design.md` and `design/COMP_*.md`
-4. The workstream design: `<ws_feature_dir>/high_level_design.md`
+1. The feature spec: find it via `find-feature` (may be under `specs/THEME_*/features/` or `specs/`)
+2. All work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
+3. Global design docs: `design/design.md` and `design/DOMAIN_*/COMP_*.md`
+4. The epic design: `<epic_dir>/high_level_design.md`
 
 ## Process
 1. Read all stories for the feature (skip DONE stories).
@@ -76,10 +76,10 @@ Body:
 - Task dependencies MUST respect story dependencies.
 - Each task maps to a single Pull Request.
 
-Create story directories and determine task numbers:
+Determine task numbers:
 ```bash
 # For each story that needs tasks:
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <ws_feature_dir>/stories/STORY_NNN
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" next-task-number <epic_dir>/stories/STORY_NNN
 ```
 
 ## AC Coverage Verification
@@ -89,8 +89,8 @@ After generating all tasks, verify coverage:
 Flag any gaps.
 
 ## Output Location
-Write files to: `<ws_feature_dir>/stories/STORY_NNN/TASK_NNN_<slug>.md`
-Create the story subdirectory if it doesn't exist.
+Write files to: `<epic_dir>/stories/STORY_NNN/TASK_NNN_<slug>.md`
+The story subdirectory should already exist from the stories phase.
 
 ## Context Export
 
@@ -103,7 +103,7 @@ The file MUST follow this structure:
 role: "tech_lead"
 skill: "sdd-tasks"
 feature: "<FEAT_NNN>"
-workstream: "<WS_NNN>"
+epic: "<EPIC_NNN>"
 last_updated: "<today's date as YYYY-MM-DDTHH:MM:SS>"
 invocation_count: <N+1 if prior context existed, else 1>
 ---

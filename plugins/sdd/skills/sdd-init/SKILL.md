@@ -50,7 +50,7 @@ You are now acting as the **System Architect**. Read the codebase (and any user-
 
 Read these templates and use them as structural guides — they are the same templates that `/sdd-design` uses:
 - `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/design-template.md` — for design/design.md
-- `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/component-design-template.md` — for each COMP_*.md
+- `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/component-design-template.md` — for each COMP_*.md within domain directories
 
 ### Process
 
@@ -60,11 +60,11 @@ Read these templates and use them as structural guides — they are the same tem
 
 3. **Incorporate existing documentation.** If the user provided docs in Step 4, use them as primary context. Cross-reference against the actual code to verify accuracy. Prefer information from the code when docs and code disagree.
 
-4. **Identify components.** Look for natural boundaries: modules, packages, services, major classes, or layers (e.g., API, data access, business logic, UI). Each distinct area of responsibility becomes a component.
+4. **Identify domains and components.** Look for natural bounded contexts: modules, packages, services, or layers (e.g., API, data access, business logic, UI). Group related components into domains. Each distinct area of responsibility becomes a component within a domain.
 
-5. **Generate `design/design.md`** using the design template as the structural guide.
+5. **Generate `design/design.md`** using the design template as the structural guide. Include a Domain Index and Component Index.
 
-6. **Generate `design/COMP_<name>.md`** for each identified component, using the component design template as the structural guide.
+6. **Generate domain directories and component docs.** For each domain, create `design/DOMAIN_NNN_<name>/` and generate `design/DOMAIN_NNN_<name>/COMP_<name>.md` for each component, using the component design template as the structural guide. Use `sdd-util next-domain-number` to determine the next available domain number.
 
 Base all content on what you observe in the actual code and any provided documentation — do not speculate or add aspirational content. Document what exists.
 
@@ -81,4 +81,4 @@ After completing all steps, tell the user:
 
 If design documents were generated for an existing project, also tell the user:
 
-> Design documents have been generated from your existing codebase. Review `design/design.md` and `design/COMP_*.md` to verify accuracy, then use `/sdd-feature` to define your next feature.
+> Design documents have been generated from your existing codebase. Review `design/design.md` and `design/DOMAIN_*/COMP_*.md` to verify accuracy, then use `/sdd-feature` to define your next feature.

@@ -4,7 +4,7 @@
 # Stories and tasks are topologically sorted respecting depends_on fields.
 # Tasks already marked DONE are excluded.
 
-feature: "FEAT_NNN_slug"
+epic: "EPIC_NNN_slug"
 generated_at: "YYYY-MM-DDTHH:MM:SS"
 
 stories:

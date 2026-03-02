@@ -93,6 +93,22 @@ class StoryLocation:
     story_id: str
     feature_dir: Path
     feature_slug: str
+    # Optional fields for work-channel stories
+    epic_dir: Path | None = None
+    epic_slug: str | None = None
+    # Optional field for spec-channel stories in theme hierarchy
+    theme_dir: Path | None = None
+
+
+@dataclass
+class EpicLocation:
+    """Result of finding an epic in work/."""
+    epic_dir: Path
+    epic_id: str
+    epic_slug: str
+
+
+_STORY_GLOB = "STORY_*.md"
 
 
 class StateManager:
@@ -141,11 +157,23 @@ class StateManager:
     # ── Feature operations ───────────────────────────────────────
 
     def find_feature_dir(self, feature_name: str) -> Path | None:
-        """Find a feature directory by exact name or substring match."""
+        """Find a feature directory by exact name or substring match.
+
+        Searches both the new theme hierarchy (specs/THEME_*/features/FEAT_*)
+        and the legacy flat layout (specs/FEAT_*).
+        """
+        # New hierarchy: specs/THEME_*/features/FEAT_*
+        result = self.find_feature_in_specs(feature_name)
+        if result:
+            return result
+
+        # Legacy flat layout: specs/FEAT_*
         if not self.specs_dir.exists():
             return None
         for d in sorted(self.specs_dir.iterdir()):
-            if d.is_dir() and (d.name == feature_name or feature_name in d.name):
+            if d.is_dir() and d.name.startswith("FEAT_") and (
+                d.name == feature_name or feature_name in d.name
+            ):
                 return d
         return None
 
@@ -175,7 +203,7 @@ class StateManager:
         stories_dir = feat_dir / "stories"
         if not stories_dir.exists():
             return []
-        return sorted(stories_dir.glob("STORY_*.md"))
+        return sorted(stories_dir.glob(_STORY_GLOB))
 
     def list_stories(self, feature_name: str) -> list[Document]:
         """Load all story Documents for a feature."""
@@ -223,19 +251,41 @@ class StateManager:
                 max_num = max(max_num, int(match.group(1)))
         return max_num + 1
 
-    def _story_files(self) -> list[tuple[Path, Path]]:
-        """Return (feature_dir, story_file) pairs across all features."""
-        if not self.specs_dir.exists():
+    def _collect_stories_from(self, feat_dir: Path) -> list[tuple[Path, Path]]:
+        """Collect (feature_dir, story_file) pairs from a single feature directory."""
+        stories_dir = feat_dir / "stories"
+        if not stories_dir.exists():
             return []
-        results: list[tuple[Path, Path]] = []
-        for feat_dir in sorted(self.specs_dir.iterdir()):
-            if not feat_dir.is_dir() or not feat_dir.name.startswith("FEAT_"):
-                continue
-            stories_dir = feat_dir / "stories"
-            if stories_dir.exists():
-                results.extend(
-                    (feat_dir, f) for f in sorted(stories_dir.glob("STORY_*.md"))
+        return [(feat_dir, f) for f in sorted(stories_dir.glob(_STORY_GLOB))]
+
+    def _list_feature_dirs(self) -> list[Path]:
+        """List all FEAT_* directories across themes and legacy layout."""
+        dirs: list[Path] = []
+        # New hierarchy: specs/THEME_*/features/FEAT_*
+        for theme_dir in self._list_theme_dirs():
+            features_dir = theme_dir / "features"
+            if features_dir.exists():
+                dirs.extend(
+                    d for d in sorted(features_dir.iterdir())
+                    if d.is_dir() and d.name.startswith("FEAT_")
                 )
+        # Legacy flat layout: specs/FEAT_*
+        if self.specs_dir.exists():
+            dirs.extend(
+                d for d in sorted(self.specs_dir.iterdir())
+                if d.is_dir() and d.name.startswith("FEAT_")
+            )
+        return dirs
+
+    def _story_files(self) -> list[tuple[Path, Path]]:
+        """Return (feature_dir, story_file) pairs across all features.
+
+        Searches both the new theme hierarchy (specs/THEME_*/features/FEAT_*)
+        and the legacy flat layout (specs/FEAT_*).
+        """
+        results: list[tuple[Path, Path]] = []
+        for feat_dir in self._list_feature_dirs():
+            results.extend(self._collect_stories_from(feat_dir))
         return results
 
     @staticmethod
@@ -244,18 +294,27 @@ class StateManager:
         id_match = re.match(r"(STORY_\d{3})", stem)
         return id_match.group(1) if id_match else stem
 
-    def find_story(self, name: str) -> StoryLocation | None:
-        """Find a story by exact ID, slug, or substring match."""
-        for feat_dir, story_file in self._story_files():
-            stem = story_file.stem
-            story_id = self._extract_story_id(stem)
-            if stem == name or story_id == name or name in stem:
-                return StoryLocation(
-                    story_path=story_file,
-                    story_id=story_id,
-                    feature_dir=feat_dir,
-                    feature_slug=feat_dir.name,
-                )
+    def find_story(self, name: str, channel: str = "both") -> StoryLocation | None:
+        """Find a story by exact ID, slug, or substring match.
+
+        Args:
+            name: Story name, ID, or substring to search for.
+            channel: "spec" to search specs only, "work" to search work only,
+                     "both" to search both (default).
+        """
+        if channel in ("spec", "both"):
+            for feat_dir, story_file in self._story_files():
+                stem = story_file.stem
+                story_id = self._extract_story_id(stem)
+                if stem == name or story_id == name or name in stem:
+                    return StoryLocation(
+                        story_path=story_file,
+                        story_id=story_id,
+                        feature_dir=feat_dir,
+                        feature_slug=feat_dir.name,
+                    )
+        if channel in ("work", "both"):
+            return self.find_work_story(name)
         return None
 
     def next_feature_number(self) -> int:
@@ -266,3 +325,86 @@ class StateManager:
 
     def next_task_number(self, ws_story_dir: Path) -> int:
         return self.next_number(ws_story_dir, r"TASK_(\d{3})")
+
+    # ── Theme operations ──────────────────────────────────────────
+
+    def find_theme_dir(self, theme_name: str) -> Path | None:
+        """Find a theme directory by exact name or substring match."""
+        if not self.specs_dir.exists():
+            return None
+        for d in sorted(self.specs_dir.iterdir()):
+            if d.is_dir() and d.name.startswith("THEME_") and (
+                d.name == theme_name or theme_name in d.name
+            ):
+                return d
+        return None
+
+    def next_theme_number(self) -> int:
+        """Return the next available THEME_NNN number."""
+        return self.next_number(self.specs_dir, r"THEME_(\d{3})_")
+
+    def next_feature_number_in_theme(self, theme_dir: Path) -> int:
+        """Return the next available FEAT_NNN number within a theme."""
+        return self.next_number(theme_dir / "features", r"FEAT_(\d{3})_")
+
+    def _list_theme_dirs(self) -> list[Path]:
+        """Return sorted THEME_* directories under specs/."""
+        if not self.specs_dir.exists():
+            return []
+        return sorted(
+            d for d in self.specs_dir.iterdir()
+            if d.is_dir() and d.name.startswith("THEME_")
+        )
+
+    def find_feature_in_specs(self, feature_name: str) -> Path | None:
+        """Find a feature directory within the theme hierarchy.
+
+        Scans specs/THEME_*/features/ for matching FEAT_* directories.
+        """
+        for theme_dir in self._list_theme_dirs():
+            features_dir = theme_dir / "features"
+            if not features_dir.exists():
+                continue
+            for feat_dir in sorted(features_dir.iterdir()):
+                if feat_dir.is_dir() and (
+                    feat_dir.name == feature_name or feature_name in feat_dir.name
+                ):
+                    return feat_dir
+        return None
+
+    # ── Work-channel story operations ─────────────────────────────
+
+    def _work_story_files(self) -> list[tuple[Path, Path]]:
+        """Return (epic_dir, story_file) pairs across all epics."""
+        if not self.work_dir.exists():
+            return []
+        results: list[tuple[Path, Path]] = []
+        for epic_dir in sorted(self.work_dir.iterdir()):
+            if not epic_dir.is_dir() or not epic_dir.name.startswith("EPIC_"):
+                continue
+            stories_dir = epic_dir / "stories"
+            if not stories_dir.exists():
+                continue
+            for story_dir in sorted(stories_dir.iterdir()):
+                if not story_dir.is_dir() or not story_dir.name.startswith("STORY_"):
+                    continue
+                story_file = story_dir / "story.md"
+                if story_file.exists():
+                    results.append((epic_dir, story_file))
+        return results
+
+    def find_work_story(self, name: str) -> StoryLocation | None:
+        """Find a work-channel story by exact ID, slug, or substring match."""
+        for epic_dir, story_file in self._work_story_files():
+            story_dir_name = story_file.parent.name
+            story_id = self._extract_story_id(story_dir_name)
+            if story_dir_name == name or story_id == name or name in story_dir_name:
+                return StoryLocation(
+                    story_path=story_file,
+                    story_id=story_id,
+                    feature_dir=epic_dir,  # for backward compat
+                    feature_slug=epic_dir.name,
+                    epic_dir=epic_dir,
+                    epic_slug=epic_dir.name,
+                )
+        return None

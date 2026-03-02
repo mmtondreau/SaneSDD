@@ -35,11 +35,20 @@
      - Security
      - Performance & Caching -->
 
+## Domain Index
+
+<!-- Master table of all domains (bounded contexts) in the system. Each domain
+     groups related components. -->
+
+| Domain | Path | Purpose |
+|--------|------|---------|
+| <DomainName> | `design/DOMAIN_<NNN>_<name>/` | <1-line purpose> |
+
 ## Component Index
 
 <!-- Master table of all components in the system. Every component listed here
-     MUST have a corresponding design/COMP_<name>.md with full detail. -->
+     MUST have a corresponding COMP_<name>.md within its domain directory. -->
 
-| Component | Design Doc | Purpose | Status |
-|-----------|-----------|---------|--------|
-| <Name> | `design/COMP_<name>.md` | <1-line purpose> | New / Modified / Existing |
+| Component | Domain | Design Doc | Purpose | Status |
+|-----------|--------|-----------|---------|--------|
+| <Name> | <DomainName> | `design/DOMAIN_<NNN>_<name>/COMP_<name>.md` | <1-line purpose> | New / Modified / Existing |

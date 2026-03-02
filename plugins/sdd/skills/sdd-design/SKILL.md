@@ -1,6 +1,6 @@
 ---
 name: sdd-design
-description: Create a high-level design for a feature. Use after a feature spec has been created with /sdd-feature.
+description: Create a high-level design for a feature and set up an epic for implementation. Use after a feature spec has been created with /sdd-feature.
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
@@ -25,24 +25,24 @@ Save the output as `<feature_slug>` (e.g., `FEAT_001_checkout_resume`).
 
 ## Setup
 
-Create a workstream:
+Create an epic:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" create-workstream <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" create-epic <feature_slug>
 ```
 
-Save the output as `<ws_feature_dir>`.
+Save the output as `<epic_dir>`.
 
 ## Context Import
 
 1. Read prior agent context:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context system_architect --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`. If empty, there is no prior context.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path system_architect --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path system_architect --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
@@ -70,9 +70,9 @@ Combine all gathered context into a single prompt for the sub-agent. The prompt 
 1. The contents of `reference/agent-prompt.md`
 2. The design templates (include their contents inline so the sub-agent can reference them)
 3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
-4. The feature slug, workstream feature directory path, and context export path as concrete values (replace all placeholders)
+4. The feature slug, epic directory path, and context export path as concrete values (replace all placeholders)
 5. `PM_CONTEXT` (if any), prefixed with "## Cross-Role Context (Product Manager)\nThe Product Manager recorded the following context during feature definition:\n"
-6. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this workstream. Here is context from your previous session:\n"
+6. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this epic. Here is context from your previous session:\n"
 7. The user's arguments: `$ARGUMENTS`
 
 ## Dispatch Sub-Agent

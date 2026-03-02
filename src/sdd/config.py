@@ -20,3 +20,11 @@ WORK_DIR = "work"
 DESIGN_DIR = "design"
 ROLES_DIR = ".roles"
 INDEX_FILE = "INDEX.md"
+
+# ID prefixes (used in regex patterns and numbering)
+THEME_PREFIX = "THEME"
+EPIC_PREFIX = "EPIC"
+FEAT_PREFIX = "FEAT"
+STORY_PREFIX = "STORY"
+TASK_PREFIX = "TASK"
+DOMAIN_PREFIX = "DOMAIN"

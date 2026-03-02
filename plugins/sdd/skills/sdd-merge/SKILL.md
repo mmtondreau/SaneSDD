@@ -20,7 +20,7 @@ You are the orchestrator for merging a completed story branch to the base branch
 ```
 If this fails, STOP and tell the user: "Story not found. Check the story ID and try again."
 
-Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, and `<feature_slug>`.
+Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, `<feature_slug>`, `<epic_dir>`, and `<epic_slug>`.
 
 ### 2. Verify Story is DONE
 
@@ -30,17 +30,17 @@ If status is NOT `DONE`, STOP and tell the user:
 
 > Story `<story_id>` is not complete (status: `<status>`). Run `/sdd-implement <story_id>` to complete implementation first.
 
-### 3. Find the Workstream
+### 3. Find the Epic
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-epic <feature_slug>
 ```
 
-Save the output as `<ws_feature_dir>`.
+Save the output as `<epic_dir>`.
 
 ### 4. Verify All Tasks are DONE
 
-Determine the workstream story directory: `<ws_feature_dir>/stories/<story_id>/`
+Determine the epic story directory: `<epic_dir>/stories/<story_id>/`
 
 Read all `TASK_*.md` files in that directory. For each task, check that frontmatter `status` is `DONE`.
 
@@ -64,7 +64,7 @@ If any task does not have `code_review: "APPROVED"`, STOP and report:
 
 ### 6. Verify Story Branch Exists
 
-Derive the branch name from the story file name. If the story file is `STORY_001_user_login.md`, the branch name is `story/STORY_001_user_login`.
+Derive the branch name from the story directory name. If the story directory is `STORY_001_user_login`, the branch name is `story/STORY_001_user_login`.
 
 ```bash
 git branch --list "story/<branch_name>"
@@ -139,10 +139,10 @@ Report a summary:
 - Tasks completed: `<count>`
 - All acceptance criteria satisfied
 
-Check if there are more stories for the feature that are not DONE. Read all story files in `<feature_dir>/stories/`. If any stories remain with status not `DONE`, tell the user:
+Check if there are more stories for the epic that are not DONE. Read all story files from `<epic_dir>/stories/*/story.md`. If any stories remain with status not `DONE`, tell the user:
 
 > **Next step:** Run `/sdd-implement <next_story_id>` to implement the next story.
 
-If ALL stories for the feature are `DONE`, update the feature frontmatter status to `DONE` and tell the user:
+If ALL stories for the epic are `DONE`, update the epic frontmatter status to `DONE` and tell the user:
 
-> **Feature complete!** All stories for `<feature_slug>` have been implemented and merged.
+> **Epic complete!** All stories for `<epic_slug>` have been implemented and merged.

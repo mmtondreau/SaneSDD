@@ -40,20 +40,21 @@ def project_with_stories(project_with_feature: Path) -> Path:
 
 
 @pytest.fixture
-def project_with_workstream(project_with_stories: Path) -> Path:
-    """Project with a feature, stories, and a workstream with tasks."""
+def project_with_epic(project_with_stories: Path) -> Path:
+    """Project with a feature, stories, and an epic with tasks."""
     root = project_with_stories
-    ws_feat = root / "work" / "WS_001" / "FEAT_001_checkout_resume"
-    ws_feat.mkdir(parents=True)
-    (ws_feat / "stories").mkdir()
+    epic_dir = root / "work" / "EPIC_001_checkout_resume"
+    epic_dir.mkdir(parents=True)
+    (epic_dir / "stories").mkdir()
+    shutil.copy(FIXTURES_DIR / "sample_epic.md", epic_dir / "epic.md")
 
-    # STORY_001 tasks
-    story_dir = ws_feat / "stories" / "STORY_001"
+    # STORY_001 with work story + tasks
+    story_dir = epic_dir / "stories" / "STORY_001"
     story_dir.mkdir()
+    shutil.copy(FIXTURES_DIR / "sample_work_story.md", story_dir / "story.md")
     task_001_dest = story_dir / "TASK_001_create_cart_session_table.md"
     shutil.copy(FIXTURES_DIR / "sample_task.md", task_001_dest)
 
-    # Create TASK_002 for STORY_001 (referenced in sample_plan.yaml)
     task_002_content = """\
 ---
 id: "TASK_002"
@@ -72,9 +73,30 @@ Add API endpoint to merge guest cart with authenticated cart.
 """
     (story_dir / "TASK_002_add_merge_endpoint.md").write_text(task_002_content)
 
-    # STORY_002 tasks
-    story_002_dir = ws_feat / "stories" / "STORY_002"
+    # STORY_002 with work story + tasks
+    story_002_dir = epic_dir / "stories" / "STORY_002"
     story_002_dir.mkdir()
+
+    story_002_content = """\
+---
+id: "STORY_002"
+title: "Guest Checkout"
+status: "TODO"
+epic: "EPIC_001"
+depends_on: []
+acceptance_criteria:
+  - id: "AC_003"
+    description: "Guest users can checkout without account"
+    status: "TODO"
+created: "2026-02-23"
+updated: "2026-02-23"
+---
+
+## User Story
+As a guest, I want to checkout without creating an account.
+"""
+    (story_002_dir / "story.md").write_text(story_002_content)
+
     task_001_s2_content = """\
 ---
 id: "TASK_001"
@@ -93,6 +115,34 @@ Allow guest users to checkout without creating an account.
 """
     (story_002_dir / "TASK_001_allow_guest_checkout.md").write_text(task_001_s2_content)
 
-    shutil.copy(FIXTURES_DIR / "sample_plan.yaml", ws_feat / "development_plan.yaml")
+    # Create development plan (epic-format)
+    plan_content = """\
+epic: "EPIC_001_checkout_resume"
+generated_at: "2026-02-23T10:00:00"
+stories:
+  - story_id: "STORY_001"
+    order: 1
+    tasks:
+      - task_id: "TASK_001"
+        order: 1
+        depends_on: []
+        estimated_effort: "medium"
+      - task_id: "TASK_002"
+        order: 2
+        depends_on: ["TASK_001"]
+        estimated_effort: "small"
+  - story_id: "STORY_002"
+    order: 2
+    tasks:
+      - task_id: "TASK_001"
+        order: 1
+        depends_on: []
+        estimated_effort: "large"
+risks:
+  - description: "Cart merge logic may be complex"
+    severity: "medium"
+    mitigation: "Start with simple last-write-wins strategy"
+"""
+    (epic_dir / "development_plan.yaml").write_text(plan_content)
 
     return root

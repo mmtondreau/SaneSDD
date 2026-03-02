@@ -1,28 +1,28 @@
-# High-Level Design: <Feature Title>
+# High-Level Design: <Epic Title>
 
 ## Overview
 
-<!-- 1-2 paragraph summary of the architectural approach for this feature.
+<!-- 1-2 paragraph summary of the architectural approach for this epic.
      Explain the "big picture" — how the system will solve the problem. -->
 
 ## Components
 
-<!-- List each component involved in this feature. For each component, provide:
-     - Name (must match the COMP_<name>.md file in design/)
+<!-- List each component involved in this epic. For each component, provide:
+     - Name (must match the COMP_<name>.md file in design/DOMAIN_*/)
      - Brief description (1-2 sentences)
      - Whether it's new or existing (and what changes if existing)
 
-     Every component listed here MUST have a corresponding design/COMP_<name>.md
+     Every component listed here MUST have a corresponding design/DOMAIN_*/COMP_<name>.md
      with full detail. -->
 
 ### <ComponentName>
 - **Status**: New | Modified
 - **Purpose**: <1-2 sentence description>
-- **Design doc**: `design/COMP_<name>.md`
+- **Design doc**: `design/DOMAIN_<NNN>_<domain>/COMP_<name>.md`
 
 ## Data Flow
 
-<!-- Describe how data moves through the system for this feature.
+<!-- Describe how data moves through the system for this epic.
      Use numbered steps or ASCII diagrams. Show the path from
      user action to final result. -->
 

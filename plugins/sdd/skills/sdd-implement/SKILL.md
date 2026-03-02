@@ -23,19 +23,19 @@ Before proceeding, verify the required inputs exist:
 ```
 If this fails, STOP and tell the user: "Story not found. Run `/sdd-stories <feature-name>` first to generate user stories."
 
-Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, and `<feature_slug>`.
+Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, `<feature_slug>`, `<epic_dir>`, and `<epic_slug>`.
 
-2. Check that the workstream exists:
+2. Check that the epic exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-workstream <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" find-epic <feature_slug>
 ```
-If this fails, STOP and tell the user: "No workstream found. Run `/sdd-design <feature-name>` first to create the high-level design."
+If this fails, STOP and tell the user: "No epic found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
-Save the output as `<ws_feature_dir>`.
+Save the output as `<epic_dir>`.
 
 3. Check that the development plan exists and contains this story:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" plan-json <epic_slug>
 ```
 If this fails, STOP and tell the user: "No development plan found. Run `/sdd-plan <feature-name>` first to create the execution plan."
 
@@ -56,7 +56,7 @@ Before starting, check for and read these files if they exist. Save each as the 
 
 Read prior context for all five roles. For each role, run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context <role> --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" read-context <role> --epic <epic_dir>
 ```
 Where `<role>` is: `developer`, `code_reviewer`, `task_qa`, `story_qa`, `tech_lead`.
 
@@ -64,7 +64,7 @@ Save each non-empty result as `<ROLE>_PRIOR_CONTEXT`.
 
 Also get context export paths for all five roles:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path <role> --workstream <ws_feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" context-path <role> --epic <epic_dir>
 ```
 Save each as `<role>_context_export_path`.
 
@@ -72,7 +72,7 @@ Save each as `<role>_context_export_path`.
 
 Before processing the story, create a dedicated git branch:
 
-1. Derive the branch name from the story file. If the story file is `STORY_001_user_login.md`, the branch name is `story/STORY_001_user_login`.
+1. Derive the branch name from the story directory name. If the story directory is `STORY_001_user_login`, the branch name is `story/STORY_001_user_login`.
 
 2. Check if the branch already exists:
 ```bash
@@ -115,7 +115,7 @@ Build a prompt that includes:
 1. The agent-prompt-developer.md contents
 2. `DEVELOPER_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
 3. `DEVELOPER_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
-4. The task spec path, story path, feature slug, ws_feature_dir, and `developer_context_export_path` as concrete values
+4. The task spec path, story path, feature slug, epic_dir, and `developer_context_export_path` as concrete values
 5. Instruction to read the specific task file and its parent story before starting work
 6. If re-invoked after a code review rejection, include the `review_notes` from the task frontmatter, prefixed with "## Code Review Feedback\n"
 7. If re-invoked after a Task QA failure, include the `qa_notes` from the task frontmatter, prefixed with "## QA Feedback\n"
@@ -135,7 +135,7 @@ Build a prompt that includes:
 1. The agent-prompt-code-reviewer.md contents
 2. `CODE_REVIEWER_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
 3. `CODE_REVIEWER_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
-4. The task spec path, story path, feature slug, ws_feature_dir, and `code_reviewer_context_export_path` as concrete values
+4. The task spec path, story path, feature slug, epic_dir, and `code_reviewer_context_export_path` as concrete values
 5. Instruction to read the specific task file and review all code changes for this task
 
 Dispatch via **Task tool**:
@@ -161,7 +161,7 @@ Build a prompt that includes:
 1. The agent-prompt-task-qa.md contents
 2. `TASK_QA_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
 3. `TASK_QA_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
-4. The task spec path, story path, feature slug, ws_feature_dir, and `task_qa_context_export_path` as concrete values
+4. The task spec path, story path, feature slug, epic_dir, and `task_qa_context_export_path` as concrete values
 5. Instruction to read the specific task file before starting validation
 
 Dispatch via **Task tool**:
@@ -189,7 +189,7 @@ Build a prompt that includes:
 1. The agent-prompt-story-qa.md contents
 2. `STORY_QA_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
 3. `STORY_QA_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
-4. The story path, all task paths for this story, feature slug, ws_feature_dir, and `story_qa_context_export_path` as concrete values
+4. The story path, all task paths for this story, feature slug, epic_dir, and `story_qa_context_export_path` as concrete values
 
 Dispatch via **Task tool**:
 - `subagent_type`: `"general-purpose"`
@@ -197,6 +197,15 @@ Dispatch via **Task tool**:
 - `prompt`: The combined prompt
 
 Wait for completion. Update `STORY_QA_PRIOR_CONTEXT` by reading the story_qa context file.
+
+### Step 4b: Story Promotion
+
+Re-read the story file. If the story status is `DONE` (Story QA passed), promote the work story to the spec channel:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" promote-story <story_path> --epic <epic_dir>
+```
+
+If the story is not `DONE`, skip this step and proceed to Step 5 (Remediation).
 
 ### Step 5: REMEDIATION (if story not DONE)
 
@@ -210,7 +219,7 @@ Build a prompt that includes:
 1. The agent-prompt-tech-lead.md contents
 2. `TECH_LEAD_OVERRIDES` (if any), prefixed with "## Team Overrides\n"
 3. `TECH_LEAD_PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\n"
-4. The story path, ws_story_dir, feature slug, ws_feature_dir, and `tech_lead_context_export_path` as concrete values
+4. The story path, `<epic_dir>/stories/<story_id>/` as the story directory, feature slug, epic_dir, and `tech_lead_context_export_path` as concrete values
 5. The list of incomplete ACs from the story file
 
 Dispatch via **Task tool**:

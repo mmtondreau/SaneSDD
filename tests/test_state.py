@@ -130,22 +130,22 @@ class TestStateManager:
         assert feat_dir is not None
         assert state.next_story_number(feat_dir) == 3
 
-    def test_list_task_paths(self, project_with_workstream: Path) -> None:
-        state = StateManager(project_with_workstream)
+    def test_list_task_paths(self, project_with_epic: Path) -> None:
+        state = StateManager(project_with_epic)
         task_dir = (
-            project_with_workstream / "work" / "WS_001"
-            / "FEAT_001_checkout_resume" / "stories" / "STORY_001"
+            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            / "stories" / "STORY_001"
         )
         paths = state.list_task_paths(task_dir)
         assert len(paths) == 2
         assert "TASK_001" in paths[0].name
         assert "TASK_002" in paths[1].name
 
-    def test_ac_mapping(self, project_with_workstream: Path) -> None:
-        state = StateManager(project_with_workstream)
+    def test_ac_mapping(self, project_with_epic: Path) -> None:
+        state = StateManager(project_with_epic)
         task_dir = (
-            project_with_workstream / "work" / "WS_001"
-            / "FEAT_001_checkout_resume" / "stories" / "STORY_001"
+            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            / "stories" / "STORY_001"
         )
         paths = state.list_task_paths(task_dir)
         doc = state.load(paths[0])

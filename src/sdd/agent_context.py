@@ -9,14 +9,21 @@ class AgentContextManager:
     """Manages persistent context files for agent roles.
 
     Context files live at:
+    - Epic-scoped: work/EPIC_NNN_slug/agent/<role>/context.md
+    - Theme-scoped (pre-epic): specs/THEME_NNN_slug/agent/<role>/context.md
+
+    Legacy paths are also supported:
     - Workstream-scoped: work/WS_NNN/FEAT_NNN_slug/agent/<role>/context.md
-    - Feature-scoped (pre-workstream): specs/FEAT_NNN_slug/agent/<role>/context.md
+    - Feature-scoped: specs/FEAT_NNN_slug/agent/<role>/context.md
     """
 
     def context_path(
         self,
         role: str,
         *,
+        epic_dir: Path | None = None,
+        theme_dir: Path | None = None,
+        # Legacy parameter names (aliases)
         ws_feature_dir: Path | None = None,
         feature_dir: Path | None = None,
     ) -> Path:
@@ -24,20 +31,20 @@ class AgentContextManager:
 
         Args:
             role: The agent role identifier (e.g., "system_architect").
-            ws_feature_dir: Workstream feature directory
-                (e.g., work/WS_001/FEAT_001_slug/).
-            feature_dir: Feature spec directory
-                (e.g., specs/FEAT_001_slug/). Used for pre-workstream roles.
+            epic_dir: Epic directory (e.g., work/EPIC_001_slug/).
+            theme_dir: Theme spec directory (e.g., specs/THEME_001_slug/).
+            ws_feature_dir: Legacy: workstream feature directory.
+            feature_dir: Legacy: feature spec directory.
 
         Returns:
             Resolved path to the context.md file.
 
         Raises:
-            ValueError: If neither ws_feature_dir nor feature_dir is provided.
+            ValueError: If no directory is provided.
         """
-        base = ws_feature_dir or feature_dir
+        base = epic_dir or ws_feature_dir or theme_dir or feature_dir
         if base is None:
-            msg = "Either ws_feature_dir or feature_dir must be provided"
+            msg = "Provide epic_dir, theme_dir, ws_feature_dir, or feature_dir"
             raise ValueError(msg)
         return base / "agent" / role / "context.md"
 
@@ -45,6 +52,8 @@ class AgentContextManager:
         self,
         role: str,
         *,
+        epic_dir: Path | None = None,
+        theme_dir: Path | None = None,
         ws_feature_dir: Path | None = None,
         feature_dir: Path | None = None,
     ) -> str | None:
@@ -54,7 +63,11 @@ class AgentContextManager:
             File contents as a string, or None if the file does not exist.
         """
         path = self.context_path(
-            role, ws_feature_dir=ws_feature_dir, feature_dir=feature_dir
+            role,
+            epic_dir=epic_dir,
+            theme_dir=theme_dir,
+            ws_feature_dir=ws_feature_dir,
+            feature_dir=feature_dir,
         )
         if path.exists():
             return path.read_text(encoding="utf-8")
@@ -64,6 +77,8 @@ class AgentContextManager:
         self,
         role: str,
         *,
+        epic_dir: Path | None = None,
+        theme_dir: Path | None = None,
         ws_feature_dir: Path | None = None,
         feature_dir: Path | None = None,
     ) -> Path:
@@ -73,7 +88,11 @@ class AgentContextManager:
             Path to the context.md file (parent directories created).
         """
         path = self.context_path(
-            role, ws_feature_dir=ws_feature_dir, feature_dir=feature_dir
+            role,
+            epic_dir=epic_dir,
+            theme_dir=theme_dir,
+            ws_feature_dir=ws_feature_dir,
+            feature_dir=feature_dir,
         )
         path.parent.mkdir(parents=True, exist_ok=True)
         return path

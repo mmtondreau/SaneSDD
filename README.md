@@ -1,6 +1,6 @@
 # SDD - Spec Driven Development
 
-A Claude Code plugin that orchestrates Claude through a phased, spec-driven development workflow. SDD maintains a living `specs/` folder as the single source of truth for requirements and a `work/` directory for execution artifacts. Each phase runs Claude as a different role (Product Manager, System Architect, Tech Lead, Developer, Story QA, Task QA) with role-specific instructions and tool restrictions.
+A Claude Code plugin that orchestrates Claude through a phased, spec-driven development workflow. SDD uses three channels: `specs/` for living documentation, `work/` for execution artifacts, and `design/` for domain-driven architecture. Each phase runs Claude as a different role (Product Manager, System Architect, Tech Lead, Developer, Story QA, Task QA) with role-specific instructions and tool restrictions.
 
 SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/skills) and backed by a thin Python utility CLI for deterministic state operations.
 
@@ -36,10 +36,10 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
 /sdd-init                          # Initialize project structure
 /sdd-feature                       # Define a feature (interactive)
 /sdd-design <feature-name>         # Design the architecture (interactive)
-/sdd-stories <feature-name>        # Generate user stories
-/sdd-tasks <feature-name>          # Generate implementation tasks
-/sdd-plan <feature-name>           # Create execution plan
-/sdd-implement <feature-name>      # Implement with QA loop
+/sdd-stories <epic-name>           # Generate user stories in work channel
+/sdd-tasks <epic-name>             # Generate implementation tasks
+/sdd-plan <epic-name>              # Create execution plan
+/sdd-implement <epic-name>         # Implement with QA loop
 ```
 
 Each command tells you what to run next when it completes. Run `/sdd-help` at any time for a full workflow overview.
@@ -104,9 +104,9 @@ This creates the required directory structure and generates an initial `INDEX.md
 
 ```
 your-project/
-  specs/          # Feature specifications live here
-  work/           # Workstreams and execution artifacts
-  design/         # Architecture and component documents
+  specs/          # Living documentation (themes, features, promoted stories)
+  work/           # Execution artifacts (epics, stories, tasks)
+  design/         # Domain-driven architecture (domains, components)
   INDEX.md        # Auto-generated project index
 ```
 
@@ -128,20 +128,30 @@ Maximum 5 ACs per story." > .roles/product_manager.md
 
 ## Core Concepts
 
+### Three Channels
+
+SDD separates concerns into three channels:
+
+- **Spec channel** (`specs/`) — Living documentation describing the system as it currently exists. Organized as Theme → Feature → Story. Spec stories are promoted from the work channel after implementation completes.
+- **Work channel** (`work/`) — Execution artifacts for planned changes. Organized as Epic → Story (with ACs) → Task. Work stories contain acceptance criteria and are the original source; they are kept as history after promotion.
+- **Design channel** (`design/`) — Domain-driven architecture. Organized as Design → Domain → Component. Domains are bounded contexts grouping related components.
+
 ### Hierarchy
 
-SDD enforces a strict hierarchy of artifacts:
-
 ```
-Feature (epic)
-  └── User Story (with Acceptance Criteria)
-        └── Task (implementation unit, lives in work/)
+Spec channel:                    Work channel:                    Design channel:
+  Theme                            Epic                             Design
+  └── Feature                      └── Story (with ACs)             └── Domain
+      └── Story (living doc)           └── Task                         └── Component
 ```
 
-- **Features** define _what_ to build (owned by Product Manager)
-- **Stories** break features into user-facing behaviors with testable ACs
+- **Themes** group related features (e.g., "E-commerce", "User Management")
+- **Features** define _what_ exists in the system (owned by Product Manager)
+- **Epics** define _what to change_ (independent from features)
+- **Work Stories** break epics into user-facing behaviors with testable ACs
 - **Tasks** are developer-level implementation units mapped to specific ACs
-- Every artifact has a unique, immutable ID (e.g., `FEAT_001`, `STORY_003`, `TASK_002`, `AC_005`)
+- **Domains** are bounded contexts grouping related components
+- Every artifact has a unique, immutable ID (e.g., `THEME_001`, `FEAT_001`, `EPIC_001`, `STORY_003`, `TASK_002`, `DOMAIN_001`, `AC_005`)
 
 ### Status Lifecycle
 
@@ -149,7 +159,9 @@ All artifacts follow linear status transitions:
 
 | Artifact | Transitions |
 |----------|------------|
+| Theme    | `TODO` → `IN_PROGRESS` → `DONE` |
 | Feature  | `TODO` → `IN_PROGRESS` → `DONE` |
+| Epic     | `TODO` → `IN_PROGRESS` → `DONE` |
 | Story    | `TODO` → `IN_PROGRESS` → `DONE` (or `BLOCKED`) |
 | Task     | `TODO` → `IN_PROGRESS` → `DONE` (or `BLOCKED`) |
 
@@ -164,12 +176,12 @@ Examples:
 - `Given a user with items in their cart, when they log out, then the cart is persisted to the database`
 - `When the user clicks "Resume Cart", then all previously saved items are restored`
 
-### Specs vs Work
+### Story Promotion
 
-- **`specs/`** contains the _requirements_: features and stories. These are the source of truth and persist across workstreams.
-- **`work/`** contains _execution artifacts_: designs, tasks, development plans. These are scoped to a workstream and can be regenerated.
-- **`design/`** contains _global architecture_: system-level design and component design docs. Updated across features.
-- Tasks live **only** in `work/`, never in `specs/`.
+After implementation completes and Story QA passes, work stories are **promoted** to the spec channel as living documentation. The promotion process:
+1. Reads the work story and its epic's `spec_theme`/`spec_feature` cross-references
+2. Creates/updates the corresponding spec story under the appropriate theme and feature
+3. The work story is kept as history in the work channel
 
 ---
 
@@ -220,16 +232,18 @@ Starts an interactive session with Claude acting as a Product Manager to define 
 ```
 
 **What happens:**
-1. Determines the next available feature number (e.g., `FEAT_001`)
-2. Claude helps you articulate the feature, asking clarifying questions
-3. Produces `specs/FEAT_NNN_slug/feature.md` with YAML frontmatter
+1. Selects or creates a theme to group the feature under
+2. Determines the next available feature number (e.g., `FEAT_001`)
+3. Claude helps you articulate the feature, asking clarifying questions
+4. Produces `specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md` with YAML frontmatter
 
-**Output file example** (`specs/FEAT_001_checkout_resume/feature.md`):
+**Output file example** (`specs/THEME_001_ecommerce/features/FEAT_001_checkout_resume/feature.md`):
 ```markdown
 ---
 id: "FEAT_001"
 title: "Checkout Resume"
 status: "TODO"
+theme: "THEME_001"
 created: "2026-02-23"
 updated: "2026-02-23"
 ---
@@ -261,13 +275,13 @@ Creates a high-level design document for a feature, along with detailed componen
 
 **What happens:**
 1. Looks up the feature in `specs/`
-2. Creates a new workstream (`work/WS_NNN/FEAT_NNN_slug/`)
+2. Creates a new epic (`work/EPIC_NNN_slug/`)
 3. Claude discusses architecture interactively, then writes the design
-4. Produces `work/WS_NNN/FEAT_NNN_slug/high_level_design.md`
-5. Creates or updates `design/COMP_<name>.md` for each component with full detail
+4. Produces `work/EPIC_NNN_slug/high_level_design.md`
+5. Creates or updates `design/DOMAIN_NNN_slug/COMP_<name>.md` for each component
 6. Updates `design/design.md` with the system-wide architecture view
 
-**Next step:** `/sdd-stories <feature-name>`
+**Next step:** `/sdd-stories <epic-name>`
 
 ---
 
@@ -275,27 +289,28 @@ Creates a high-level design document for a feature, along with detailed componen
 
 **Role:** Product Manager | **Mode:** Automated | **Prerequisite:** `/sdd-design`
 
-Generates user stories from the feature spec and design documents.
+Generates user stories in the work channel from the feature spec and design documents.
 
 ```
-/sdd-stories FEAT_001
+/sdd-stories EPIC_001
 /sdd-stories checkout
 ```
 
-**Arguments:** Feature ID or name substring
+**Arguments:** Epic ID or name substring
 
 **What happens:**
-1. Reads the feature spec and high-level design
-2. Claude generates story files with YAML frontmatter and acceptance criteria (in Given-When-Then format)
-3. Produces `specs/FEAT_NNN_slug/stories/STORY_NNN_slug.md` files
+1. Reads the feature spec, epic, and high-level design
+2. Claude generates work story files with YAML frontmatter and acceptance criteria (in Given-When-Then format)
+3. Produces `work/EPIC_NNN_slug/stories/STORY_NNN_slug/story.md` files
 
-**Output file example** (`specs/FEAT_001_checkout_resume/stories/STORY_001_save_cart.md`):
+**Output file example** (`work/EPIC_001_checkout_resume/stories/STORY_001_save_cart/story.md`):
 ```markdown
 ---
 id: "STORY_001"
 title: "Save Cart"
 status: "TODO"
-feature: "FEAT_001"
+epic: "EPIC_001"
+spec_feature: "FEAT_001"
 depends_on: []
 acceptance_criteria:
   - id: "AC_001"
@@ -317,7 +332,7 @@ so that I can resume shopping later.
 - [ ] **AC_002**: When the user logs back in, then their previously saved cart is restored
 ```
 
-**Next step:** `/sdd-tasks <feature-name>`
+**Next step:** `/sdd-tasks <epic-name>`
 
 ---
 
@@ -328,18 +343,18 @@ so that I can resume shopping later.
 Generates implementation tasks from stories and design documents.
 
 ```
-/sdd-tasks FEAT_001
+/sdd-tasks EPIC_001
 /sdd-tasks checkout
 ```
 
-**Arguments:** Feature ID or name substring
+**Arguments:** Epic ID or name substring
 
 **What happens:**
 1. Reads stories, feature spec, and design docs
 2. Claude generates task files mapped to specific ACs
-3. Produces `work/WS_NNN/FEAT_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
+3. Produces `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
 
-**Next step:** `/sdd-plan <feature-name>`
+**Next step:** `/sdd-plan <epic-name>`
 
 ---
 
@@ -350,20 +365,20 @@ Generates implementation tasks from stories and design documents.
 Generates a `development_plan.yaml` that defines the execution order for all stories and tasks.
 
 ```
-/sdd-plan FEAT_001
+/sdd-plan EPIC_001
 /sdd-plan checkout
 ```
 
-**Arguments:** Feature ID or name substring
+**Arguments:** Epic ID or name substring
 
 **What happens:**
 1. Reads all stories and tasks
 2. Claude produces an ordered execution plan respecting dependencies
-3. Produces `work/WS_NNN/FEAT_NNN_slug/development_plan.yaml`
+3. Produces `work/EPIC_NNN_slug/development_plan.yaml`
 
 **Output file example** (`development_plan.yaml`):
 ```yaml
-feature: "FEAT_001_checkout_resume"
+epic: "EPIC_001_checkout_resume"
 generated_at: "2026-02-23T10:00:00"
 stories:
   - story_id: "STORY_001"
@@ -388,7 +403,7 @@ risks:
     mitigation: "Start with simple last-write-wins strategy"
 ```
 
-**Next step:** `/sdd-implement <feature-name>`
+**Next step:** `/sdd-implement <epic-name>`
 
 ---
 
@@ -399,12 +414,12 @@ risks:
 Executes the full implementation loop, cycling through multiple roles automatically.
 
 ```
-/sdd-implement FEAT_001
+/sdd-implement EPIC_001
 /sdd-implement checkout STORY_001
 ```
 
 **Arguments:**
-- First argument (required): Feature ID or name substring
+- First argument (required): Epic ID or name substring
 - Second argument (optional): Story filter to implement only a specific story
 
 **What happens for each story (in plan order):**
@@ -415,6 +430,7 @@ Story marked IN_PROGRESS
 ├── For each task:
 │   ├── [Attempt 1..3]:
 │   │   ├── DEVELOPER: Implements the code
+│   │   ├── CODE REVIEWER: Reviews changes
 │   │   ├── TASK QA: Validates implementation, runs tests
 │   │   └── Check task status:
 │   │       ├── DONE → move to next task
@@ -422,7 +438,7 @@ Story marked IN_PROGRESS
 │   └── After 3 failures → mark task BLOCKED
 │
 ├── STORY QA: Validates all acceptance criteria, runs tests
-│   ├── All ACs DONE → mark story DONE
+│   ├── All ACs DONE → mark story DONE, promote to spec channel
 │   └── Incomplete ACs → TECH LEAD creates remediation tasks
 │
 └── Next story
@@ -474,8 +490,8 @@ Interactive session. Describe what you want to build. Claude (as Product Manager
 ```
 
 Interactive session. Claude (as System Architect) reads the feature spec, discusses architecture with you, and produces:
-- A workstream-scoped `high_level_design.md`
-- Detailed `design/COMP_<name>.md` for each component
+- An epic with `high_level_design.md`
+- Detailed `design/DOMAIN_NNN_slug/COMP_<name>.md` for each component
 - An updated `design/design.md` with the system-wide view
 
 ### Step 3: Generate Stories
@@ -484,7 +500,7 @@ Interactive session. Claude (as System Architect) reads the feature spec, discus
 /sdd-stories checkout_resume
 ```
 
-Automated. Claude (as Product Manager) breaks the feature into user stories with Given-When-Then acceptance criteria.
+Automated. Claude (as Product Manager) breaks the feature into work stories with Given-When-Then acceptance criteria, stored in the work channel under the epic.
 
 ### Step 4: Generate Tasks
 
@@ -510,13 +526,14 @@ Automated. Claude (as Tech Lead) orders all tasks respecting dependencies into a
 
 Automated multi-role loop. For each story in plan order, Claude cycles through:
 1. **Developer** — writes code and tests
-2. **Task QA** — validates done criteria, runs tests, checks coverage
-3. **Story QA** — validates all ACs are satisfied
-4. **Tech Lead** — creates remediation tasks for any gaps
+2. **Code Reviewer** — reviews changes for quality and design adherence
+3. **Task QA** — validates done criteria, runs tests, checks coverage
+4. **Story QA** — validates all ACs are satisfied, promotes story to spec channel
+5. **Tech Lead** — creates remediation tasks for any gaps
 
 ### Checking Progress
 
-After each command, `INDEX.md` is automatically regenerated. Open it to see the current state of all features, workstreams, and design documents.
+After each command, `INDEX.md` is automatically regenerated. Open it to see the current state of all themes, epics, and design documents.
 
 ---
 
@@ -526,29 +543,39 @@ After running through the full workflow, your project will look like this:
 
 ```
 your-project/
-├── specs/                                    # Source of truth (requirements)
-│   └── FEAT_001_checkout_resume/
-│       ├── feature.md                        # Feature specification
+├── specs/                                    # Living documentation (current system state)
+│   └── THEME_001_ecommerce/
+│       ├── theme.md                          # Theme grouping
+│       └── features/
+│           └── FEAT_001_checkout_resume/
+│               ├── feature.md                # Feature specification
+│               └── stories/
+│                   ├── STORY_001_save_cart.md         # Promoted spec story
+│                   └── STORY_002_guest_checkout.md
+│
+├── work/                                     # Execution artifacts (planned changes)
+│   └── EPIC_001_checkout_resume/
+│       ├── epic.md                           # Epic definition
+│       ├── high_level_design.md              # Architecture design
+│       ├── development_plan.yaml             # Execution plan
+│       ├── agent/                            # Agent context persistence
+│       │   ├── developer/context.md
+│       │   └── story_qa/context.md
 │       └── stories/
-│           ├── STORY_001_save_cart.md         # User story with ACs
-│           └── STORY_002_guest_checkout.md
+│           ├── STORY_001/
+│           │   ├── story.md                  # Work story with ACs
+│           │   ├── TASK_001_create_cart_session_table.md
+│           │   └── TASK_002_add_merge_endpoint.md
+│           └── STORY_002/
+│               ├── story.md
+│               └── TASK_001_allow_guest_checkout.md
 │
-├── work/                                     # Execution artifacts
-│   └── WS_001/                               # Workstream
-│       └── FEAT_001_checkout_resume/
-│           ├── high_level_design.md           # Architecture design
-│           ├── development_plan.yaml          # Execution plan
-│           └── stories/
-│               ├── STORY_001/
-│               │   ├── TASK_001_create_cart_session_table.md
-│               │   └── TASK_002_add_merge_endpoint.md
-│               └── STORY_002/
-│                   └── TASK_001_allow_guest_checkout.md
-│
-├── design/                                   # Global architecture docs
+├── design/                                   # Domain-driven architecture
 │   ├── design.md                             # System-wide architecture
-│   ├── COMP_cart.md                          # Component design: Cart
-│   └── COMP_session.md                       # Component design: Session
+│   └── DOMAIN_001_commerce/
+│       ├── domain.md                         # Bounded context description
+│       ├── COMP_cart.md                      # Component design: Cart
+│       └── COMP_session.md                   # Component design: Session
 │
 ├── CLAUDE.md                                 # Global SDD instructions (from plugin)
 ├── INDEX.md                                  # Auto-generated file index
@@ -579,6 +606,7 @@ sdd/                                          # Marketplace repository
 │       │   │   ├── SKILL.md
 │       │   │   └── reference/
 │       │   │       ├── high-level-design-template.md
+│       │   │       ├── design-template.md
 │       │   │       └── component-design-template.md
 │       │   ├── sdd-stories/
 │       │   │   ├── SKILL.md
@@ -603,9 +631,12 @@ sdd/                                          # Marketplace repository
 ├── src/sdd/                                  # Utility CLI (sdd-util)
 │   ├── config.py
 │   ├── state.py
-│   ├── workstream.py
+│   ├── epic_manager.py
+│   ├── promotion_manager.py
+│   ├── design_manager.py
 │   ├── plan_parser.py
 │   ├── index_manager.py
+│   ├── agent_context.py
 │   └── util_cli.py
 └── pyproject.toml                            # Python dependencies
 ```
@@ -614,9 +645,9 @@ sdd/                                          # Marketplace repository
 
 | Directory | Purpose | Managed By |
 |-----------|---------|------------|
-| `specs/` | Feature specs and stories (source of truth) | Product Manager |
-| `work/` | Workstreams, designs, tasks, plans | System Architect, Tech Lead, Developer |
-| `design/` | Global architecture and component docs | System Architect |
+| `specs/` | Living documentation (themes, features, promoted stories) | Product Manager, Story QA (promotion) |
+| `work/` | Epics, work stories, tasks, plans | System Architect, Tech Lead, Developer |
+| `design/` | Domain-driven architecture (domains, components) | System Architect |
 | `.roles/` | Team-specific role customizations | You (manual) |
 
 ---
@@ -625,11 +656,11 @@ sdd/                                          # Marketplace repository
 
 All spec files use YAML frontmatter (delimited by `---`) as structured metadata. Claude reads and writes this frontmatter to track state.
 
-### Feature Frontmatter
+### Theme Frontmatter
 
 ```yaml
 ---
-id: "FEAT_NNN"
+id: "THEME_NNN"
 title: "<title>"
 status: TODO | IN_PROGRESS | DONE
 created: "YYYY-MM-DD"
@@ -637,14 +668,55 @@ updated: "YYYY-MM-DD"
 ---
 ```
 
-### Story Frontmatter
+### Feature Frontmatter
+
+```yaml
+---
+id: "FEAT_NNN"
+title: "<title>"
+status: TODO | IN_PROGRESS | DONE
+theme: "THEME_NNN"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+---
+```
+
+### Spec Story Frontmatter
+
+```yaml
+---
+id: "STORY_NNN"
+title: "<title>"
+status: DONE
+feature: "FEAT_NNN"
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+---
+```
+
+### Epic Frontmatter
+
+```yaml
+---
+id: "EPIC_NNN"
+title: "<title>"
+status: TODO | IN_PROGRESS | DONE
+spec_theme: "THEME_NNN"      # optional cross-channel ref
+spec_feature: "FEAT_NNN"     # optional cross-channel ref
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+---
+```
+
+### Work Story Frontmatter
 
 ```yaml
 ---
 id: "STORY_NNN"
 title: "<title>"
 status: TODO | IN_PROGRESS | DONE | BLOCKED
-feature: "FEAT_NNN"
+epic: "EPIC_NNN"
+spec_feature: "FEAT_NNN"     # optional: which spec feature to promote to
 depends_on: []
 acceptance_criteria:
   - id: "AC_NNN"
@@ -665,7 +737,19 @@ status: TODO | IN_PROGRESS | DONE | BLOCKED
 story: "STORY_NNN"
 depends_on: []
 ac_mapping: ["AC_NNN"]
+code_review: "APPROVED | CHANGES_REQUESTED"  # optional, set by code reviewer
+review_notes: "<feedback>"                     # optional, set by code reviewer
 created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+---
+```
+
+### Domain Frontmatter
+
+```yaml
+---
+domain: "<DomainName>"
+id: "DOMAIN_NNN"
 updated: "YYYY-MM-DD"
 ---
 ```
@@ -688,6 +772,7 @@ updated: "YYYY-MM-DD"
 - **Cross-references use IDs, not titles.** Titles can change; IDs cannot.
 - **AC IDs are scoped per story.** `AC_001` in STORY_001 is different from `AC_001` in STORY_002.
 - **ACs use Given-When-Then format.** `Given` may be omitted when the precondition is obvious.
+- **Work stories are promoted to specs.** After Story QA passes, work stories become spec stories.
 
 ---
 
@@ -770,8 +855,9 @@ mkdir -p .roles
 SDD is designed to be resumable. If a session is interrupted:
 
 - **`/sdd-implement`** skips stories and tasks already marked `DONE`. Re-running the command continues from where it left off.
-- **Workstreams** are auto-numbered (`WS_001`, `WS_002`, ...). Running `/sdd-design` again creates a new workstream rather than overwriting.
+- **Epics** are auto-numbered (`EPIC_001`, `EPIC_002`, ...). Running `/sdd-design` again creates a new epic rather than overwriting.
 - **All state is in files.** There is no database or external state. You can inspect and manually edit any frontmatter if needed.
+- **Agent context** is persisted in `work/EPIC_NNN_slug/agent/<role>/context.md`, allowing sub-agents to resume with full context across sessions.
 
 ### Re-running Commands
 
@@ -801,14 +887,24 @@ The `sdd-util` CLI provides deterministic state operations that the skills call 
 | Command | Description |
 |---------|-------------|
 | `sdd-util init [--path DIR]` | Initialize project directories and INDEX.md |
+| `sdd-util next-theme-number` | Print the next available THEME number |
 | `sdd-util next-feature-number` | Print the next available FEAT number |
+| `sdd-util next-feature-number-in-theme <dir>` | Print the next FEAT number within a theme |
 | `sdd-util next-story-number <dir>` | Print the next available STORY number |
 | `sdd-util next-task-number <dir>` | Print the next available TASK number |
+| `sdd-util next-epic-number` | Print the next available EPIC number |
+| `sdd-util next-domain-number` | Print the next available DOMAIN number |
+| `sdd-util find-theme <name>` | Find a theme directory by name/substring |
 | `sdd-util find-feature <name>` | Find a feature directory by name/substring |
-| `sdd-util find-workstream <name>` | Find the active workstream for a feature |
-| `sdd-util create-workstream <slug>` | Create a new workstream directory |
+| `sdd-util find-story <name> [--channel]` | Find a story in spec, work, or both channels |
+| `sdd-util find-epic <name>` | Find an epic directory by name/substring |
+| `sdd-util find-domain <name>` | Find a domain directory by name/substring |
+| `sdd-util create-epic <slug>` | Create a new epic directory |
 | `sdd-util regenerate-index` | Regenerate INDEX.md |
 | `sdd-util plan-json <name>` | Output development plan as JSON |
+| `sdd-util promote-story <path> --epic <dir>` | Promote a work story to the spec channel |
+| `sdd-util context-path <role> --epic <dir>` | Print the agent context file path |
+| `sdd-util read-context <role> --epic <dir>` | Print the agent context file contents |
 
 ---
 
