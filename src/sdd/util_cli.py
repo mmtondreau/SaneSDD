@@ -15,6 +15,7 @@ from sdd.index_manager import IndexManager
 from sdd.plan_parser import PlanParser
 from sdd.promotion_manager import PromotionManager
 from sdd.state import StateManager
+from sdd.status_reporter import StatusReporter, format_epic_status, format_story_status
 
 
 @click.group()
@@ -313,3 +314,79 @@ def promote_story(ctx: click.Context, work_story_path: str, epic: str) -> None:
     mgr = PromotionManager(ctx.obj["root"])
     result = mgr.promote_story(Path(work_story_path), Path(epic))
     click.echo(result)
+
+
+# ── Status commands ──────────────────────────────────────────────
+
+
+def _show_all_epics(reporter: StatusReporter) -> None:
+    """Print status for all epics."""
+    epics = reporter.all_epics_status()
+    if not epics:
+        click.echo("No epics found.")
+        return
+    for i, epic in enumerate(epics):
+        if i > 0:
+            click.echo("")
+        click.echo(format_epic_status(epic))
+
+
+def _show_epic(reporter: StatusReporter, name: str) -> None:
+    """Print status for a single epic, or raise."""
+    epic = reporter.epic_status(name)
+    if not epic:
+        raise click.ClickException(f"Epic '{name}' not found")
+    click.echo(format_epic_status(epic))
+
+
+def _show_story(reporter: StatusReporter, name: str) -> None:
+    """Print status for a single story, or raise."""
+    result = reporter.story_status(name)
+    if not result:
+        raise click.ClickException(f"Story '{name}' not found")
+    epic_info, story = result
+    click.echo(format_story_status(story, epic_info))
+
+
+@cli.command("status")
+@click.argument("name", required=False)
+@click.option(
+    "--type", "artifact_type", default=None,
+    type=click.Choice(["epic", "story"]),
+    help="Artifact type: 'epic' or 'story'. Auto-detected if omitted.",
+)
+@click.pass_context
+def status(ctx: click.Context, name: str | None, artifact_type: str | None) -> None:
+    """Show status of an epic, story, or all epics.
+
+    If NAME is omitted, shows status for all epics.
+    If NAME is provided, auto-detects whether it's an epic or story
+    (override with --type).
+    """
+    reporter = StatusReporter(ctx.obj["root"])
+
+    if name is None:
+        _show_all_epics(reporter)
+        return
+
+    if artifact_type == "story":
+        _show_story(reporter, name)
+        return
+
+    if artifact_type == "epic":
+        _show_epic(reporter, name)
+        return
+
+    # Auto-detect: try epic first, then story
+    epic = reporter.epic_status(name)
+    if epic:
+        click.echo(format_epic_status(epic))
+        return
+
+    result = reporter.story_status(name)
+    if result:
+        epic_info, story = result
+        click.echo(format_story_status(story, epic_info))
+        return
+
+    raise click.ClickException(f"'{name}' not found as epic or story")

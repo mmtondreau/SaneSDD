@@ -27,6 +27,7 @@ Available commands:
 - `sdd-util promote-story <work_story_path> --epic <epic_dir>` — promotes a completed work story to the spec channel
 - `sdd-util context-path <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file path for a role
 - `sdd-util read-context <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file contents (empty if not found)
+- `sdd-util status [name] [--type epic|story]` — shows status of an epic, story, or all epics (auto-detects type if omitted)
 
 ## Sub-Agent Architecture
 
