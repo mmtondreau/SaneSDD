@@ -22,15 +22,20 @@ SDD (Spec Driven Development) guides you through a structured, phased workflow. 
 ```
 /sdd-init                          # 1. Initialize project structure
 /sdd-feature                       # 2. Define a feature (interactive)
+/sdd-approve feature <name>        #    Review & approve
 /sdd-design <feature-name>         # 3. Design the architecture (interactive)
+/sdd-approve design <name>         #    Review & approve
 /sdd-stories <feature-name>        # 4. Generate user stories
+/sdd-approve stories <name>        #    Review & approve
 /sdd-tasks <feature-name>          # 5. Generate implementation tasks
+/sdd-approve tasks <name>          #    Review & approve
 /sdd-plan <feature-name>           # 6. Create execution plan
+/sdd-approve plan <name>           #    Review & approve
 /sdd-implement <story-id>          # 7. Implement one story (on a branch)
 /sdd-merge <story-id>              # 8. Merge completed story to main
 ```
 
-Repeat steps 7-8 for each story in the feature. Each command tells you what to run next when it completes.
+Repeat steps 7-8 for each story in the feature. Each command tells you what to run next when it completes. Use `/sdd-approve` after each step to record your review before proceeding.
 
 ### Command Reference
 
@@ -44,6 +49,8 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 | `/sdd-plan <name>` | Tech Lead | Auto | Create ordered execution plan |
 | `/sdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Promote to Spec |
 | `/sdd-merge <story>` | — | Auto | Merge completed story branch to main after verification |
+| `/sdd-approve <step> <name>` | — | Auto | Mark artifacts as reviewed/approved (step: feature, design, stories, tasks, plan) |
+| `/sdd-status [name]` | — | Info | Show status of all epics, a specific epic, or a specific story |
 | `/sdd-help` | — | Info | Show this help |
 
 **`<name>`** can be a feature ID (`FEAT_001`), slug (`checkout_resume`), or substring (`checkout`).
@@ -132,6 +139,20 @@ Create `.roles/<rolename>.md` files to customize role behavior:
 - `.roles/task_qa.md` — Affects `/sdd-implement` (QA phase)
 - `.roles/story_qa.md` — Affects `/sdd-implement` (QA phase)
 
+### Approval Workflow
+
+After each step, SDD asks you to review the generated artifacts. Use `/sdd-approve` to record your review:
+
+```
+/sdd-approve feature checkout       # Approve a feature spec
+/sdd-approve design checkout        # Approve epic design
+/sdd-approve stories checkout       # Approve all stories in an epic
+/sdd-approve tasks checkout         # Approve all tasks in an epic
+/sdd-approve plan checkout          # Approve the development plan
+```
+
+If you proceed to the next step without approving, SDD will warn you and list the unapproved artifacts. You can choose to continue anyway or go back and approve first.
+
 ### Tips
 
 - **Per-story workflow:** `/sdd-implement` processes one story at a time. Run it for each story, then `/sdd-merge` to merge.
@@ -141,3 +162,4 @@ Create `.roles/<rolename>.md` files to customize role behavior:
 - **Epics:** Running `/sdd-design` creates an epic in `work/`. Each epic is an independent unit of change.
 - **Promotion:** When a work story passes Story QA, it is automatically promoted to the spec channel as living documentation.
 - **Pre-checks:** Each command validates its inputs and tells you what to run first if something is missing.
+- **Approval gates:** Each command checks if the prior step's artifacts have been approved. You can skip approval, but SDD will warn you.

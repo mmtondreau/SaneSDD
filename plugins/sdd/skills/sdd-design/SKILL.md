@@ -23,6 +23,25 @@ If this fails, STOP and tell the user: "Feature not found. Run `/sdd-feature` fi
 
 Save the output as `<feature_slug>` (e.g., `FEAT_001_checkout_resume`).
 
+## Approval Check
+
+Run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" check-approval feature $ARGUMENTS
+```
+
+Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
+
+> **Warning:** The following artifacts from the previous step have not been approved:
+> - _(list each path from the `unapproved` array)_
+>
+> Run `/sdd-approve feature <name>` to approve, or confirm you want to continue without approval.
+> **Continue without approval?**
+
+If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
+
+If `approved` is `true`, proceed silently.
+
 ## Setup
 
 Create an epic:
@@ -116,4 +135,4 @@ List the actual file paths that were generated — do not use glob patterns.
 
 4. Tell the user:
 
-> **Next step:** Run `/sdd-stories <feature-name>` to generate user stories from this design.
+> **Next step:** Review the files above, then run `/sdd-approve design <epic-name>` to approve. Then run `/sdd-stories <feature-name>` to generate user stories.

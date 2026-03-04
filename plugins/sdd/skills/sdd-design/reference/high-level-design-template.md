@@ -1,3 +1,9 @@
+---
+epic: "EPIC_NNN"
+title: "<Epic Title>"
+updated: "YYYY-MM-DD"
+---
+
 # High-Level Design: <Epic Title>
 
 ## Overview

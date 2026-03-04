@@ -16,6 +16,7 @@ class TaskStatus:
     id: str
     title: str
     status: str
+    approved: str | None = None
 
 
 @dataclass
@@ -24,6 +25,7 @@ class StoryStatus:
     id: str
     title: str
     status: str
+    approved: str | None = None
     tasks: list[TaskStatus] = field(default_factory=list)
 
 
@@ -34,6 +36,7 @@ class EpicStatus:
     title: str
     status: str
     path: Path
+    approved: str | None = None
     stories: list[StoryStatus] = field(default_factory=list)
 
 
@@ -91,6 +94,7 @@ class StatusReporter:
                 id=meta.get("id", task_file.stem),
                 title=meta.get("title", ""),
                 status=meta.get("status", "TODO"),
+                approved=meta.get("approved"),
             ))
         return tasks
 
@@ -112,6 +116,7 @@ class StatusReporter:
                 id=meta.get("id", story_dir.name),
                 title=meta.get("title", ""),
                 status=meta.get("status", "TODO"),
+                approved=meta.get("approved"),
                 tasks=tasks,
             ))
         return stories
@@ -199,7 +204,8 @@ def format_epic_status(epic: EpicStatus) -> str:
         task_done = sum(1 for t in story.tasks if t.status == "DONE")
         task_total = len(story.tasks)
         task_summary = f" [{task_done}/{task_total} tasks done]" if task_total > 0 else ""
-        lines.append(f"  {story.id} — {story.title}: {story.status}{task_summary}")
+        approval = f" (approved: {story.approved})" if story.approved else " (not approved)"
+        lines.append(f"  {story.id} — {story.title}: {story.status}{task_summary}{approval}")
     return "\n".join(lines)
 
 
@@ -217,5 +223,6 @@ def format_story_status(
         return "\n".join(lines)
     lines.append(f"Tasks ({len(story.tasks)}):")
     for task in story.tasks:
-        lines.append(f"  {task.id} — {task.title}: {task.status}")
+        approval = f" (approved: {task.approved})" if task.approved else " (not approved)"
+        lines.append(f"  {task.id} — {task.title}: {task.status}{approval}")
     return "\n".join(lines)

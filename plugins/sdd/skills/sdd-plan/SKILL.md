@@ -34,6 +34,25 @@ Save the output as `<epic_dir>`.
 3. Check that tasks exist by globbing for `<epic_dir>/stories/*/TASK_*.md`.
 If no tasks are found, STOP and tell the user: "No tasks found. Run `/sdd-tasks <feature-name>` first to generate implementation tasks."
 
+## Approval Check
+
+Run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" check-approval tasks $ARGUMENTS
+```
+
+Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
+
+> **Warning:** The following artifacts from the previous step have not been approved:
+> - _(list each path from the `unapproved` array)_
+>
+> Run `/sdd-approve tasks <name>` to approve, or confirm you want to continue without approval.
+> **Continue without approval?**
+
+If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
+
+If `approved` is `true`, proceed silently.
+
 ## Context Import
 
 1. Read prior agent context for the tech_lead role:
@@ -94,4 +113,4 @@ List the actual file path that was generated.
 
 4. Tell the user:
 
-> **Next step:** Run `/sdd-implement <story-id>` to start implementing a story. Stories should be implemented in plan order. Use the development plan to identify the first story to implement.
+> **Next step:** Review the file above, then run `/sdd-approve plan <epic-name>` to approve. Then run `/sdd-implement <story-id>` to start implementing. Stories should be implemented in plan order.

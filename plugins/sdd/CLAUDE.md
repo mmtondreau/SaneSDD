@@ -27,6 +27,9 @@ Available commands:
 - `sdd-util promote-story <work_story_path> --epic <epic_dir>` — promotes a completed work story to the spec channel
 - `sdd-util context-path <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file path for a role
 - `sdd-util read-context <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file contents (empty if not found)
+- `sdd-util status [name] [--type epic|story]` — shows status of an epic, story, or all epics
+- `sdd-util approve <step> <name>` — marks artifacts as approved (step: feature, design, stories, tasks, plan); outputs JSON
+- `sdd-util check-approval <step> <name>` — checks if prior step's artifacts are approved; outputs JSON
 
 ## Foundational Principles
 
@@ -95,6 +98,7 @@ id: "FEAT_NNN"
 title: "<title>"
 status: TODO | IN_PROGRESS | DONE
 theme: "THEME_NNN"
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -138,6 +142,7 @@ acceptance_criteria:
   - id: "AC_NNN"
     description: "[Given <precondition>,] when <action>, then <expected result>"
     status: "TODO"
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -154,6 +159,7 @@ depends_on: []
 ac_mapping: ["AC_NNN"]
 code_review: "APPROVED | CHANGES_REQUESTED"  # optional, set by code reviewer
 review_notes: "<feedback>"                     # optional, set by code reviewer when requesting changes
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

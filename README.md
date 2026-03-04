@@ -20,6 +20,8 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
   - [/sdd-tasks](#sdd-tasks)
   - [/sdd-plan](#sdd-plan)
   - [/sdd-implement](#sdd-implement)
+  - [/sdd-approve](#sdd-approve)
+  - [/sdd-status](#sdd-status)
 - [Typical User Workflow](#typical-user-workflow)
 - [Directory Layout](#directory-layout)
 - [Frontmatter Contracts](#frontmatter-contracts)
@@ -35,14 +37,19 @@ SDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/docs/
 ```
 /sdd-init                          # Initialize project structure
 /sdd-feature                       # Define a feature (interactive)
+/sdd-approve feature <name>        # Review & approve
 /sdd-design <feature-name>         # Design the architecture (interactive)
+/sdd-approve design <name>         # Review & approve
 /sdd-stories <epic-name>           # Generate user stories in work channel
+/sdd-approve stories <name>        # Review & approve
 /sdd-tasks <epic-name>             # Generate implementation tasks
+/sdd-approve tasks <name>          # Review & approve
 /sdd-plan <epic-name>              # Create execution plan
+/sdd-approve plan <name>           # Review & approve
 /sdd-implement <epic-name>         # Implement with QA loop
 ```
 
-Each command tells you what to run next when it completes. Run `/sdd-help` at any time for a full workflow overview.
+Each command tells you what to run next when it completes. Use `/sdd-approve` after each step to record your review. Run `/sdd-help` at any time for a full workflow overview.
 
 ---
 
@@ -260,7 +267,7 @@ Users lose their cart contents when they leave the site...
 - Resume-to-purchase conversion > 30%
 ```
 
-**Next step:** `/sdd-design <feature-name>`
+**Next step:** Review the feature spec, then `/sdd-approve feature <name>`, then `/sdd-design <feature-name>`
 
 ---
 
@@ -285,7 +292,7 @@ Creates a high-level design document for a feature, along with detailed componen
 5. Creates or updates `design/DOMAIN_NNN_slug/COMP_<name>.md` for each component
 6. Updates `design/design.md` with the system-wide architecture view
 
-**Next step:** `/sdd-stories <epic-name>`
+**Next step:** Review the design, then `/sdd-approve design <epic-name>`, then `/sdd-stories <epic-name>`
 
 ---
 
@@ -336,7 +343,7 @@ so that I can resume shopping later.
 - [ ] **AC_002**: When the user logs back in, then their previously saved cart is restored
 ```
 
-**Next step:** `/sdd-tasks <epic-name>`
+**Next step:** Review the stories, then `/sdd-approve stories <epic-name>`, then `/sdd-tasks <epic-name>`
 
 ---
 
@@ -358,7 +365,7 @@ Generates implementation tasks from stories and design documents.
 2. Claude generates task files mapped to specific ACs
 3. Produces `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
 
-**Next step:** `/sdd-plan <epic-name>`
+**Next step:** Review the tasks, then `/sdd-approve tasks <epic-name>`, then `/sdd-plan <epic-name>`
 
 ---
 
@@ -407,7 +414,7 @@ risks:
     mitigation: "Start with simple last-write-wins strategy"
 ```
 
-**Next step:** `/sdd-implement <epic-name>`
+**Next step:** Review the plan, then `/sdd-approve plan <epic-name>`, then `/sdd-implement <epic-name>`
 
 ---
 
@@ -447,6 +454,56 @@ Story marked IN_PROGRESS
 │
 └── Next story
 ```
+
+---
+
+### `/sdd-approve`
+
+**Role:** — | **Mode:** Automated | **Prerequisite:** Artifacts from a prior step
+
+Marks artifacts from a workflow step as reviewed and approved. Downstream steps check for approval and warn if artifacts haven't been approved yet.
+
+```
+/sdd-approve feature checkout       # Approve a feature spec
+/sdd-approve design checkout        # Approve epic design (HLD)
+/sdd-approve stories checkout       # Approve all stories in an epic
+/sdd-approve tasks checkout         # Approve all tasks in an epic
+/sdd-approve plan checkout          # Approve the development plan
+```
+
+**Arguments:**
+- First argument (required): Step to approve — `feature`, `design`, `stories`, `tasks`, or `plan`
+- Second argument (required): Name/substring to identify the artifact (feature name or epic name)
+
+**What happens:**
+1. Finds the artifact(s) for the given step
+2. Sets `approved: "YYYY-MM-DD"` in each artifact's frontmatter (or YAML for plans)
+3. Reports which files were approved
+
+If you skip approval and proceed to the next step, SDD warns you and lists the unapproved artifacts. You can choose to continue anyway.
+
+---
+
+### `/sdd-status`
+
+**Role:** — | **Mode:** Info | **Prerequisite:** None
+
+Displays the current status of epics, stories, and tasks.
+
+```
+/sdd-status                        # Show all epics
+/sdd-status checkout               # Show a specific epic or story (auto-detected)
+/sdd-status STORY_001 --type story # Explicitly show a story
+```
+
+**Arguments:**
+- Name (optional): Epic or story name/ID/substring. If omitted, shows all epics.
+- `--type` (optional): Force lookup as `epic` or `story`. Auto-detected if omitted.
+
+**What it shows:**
+- Epic ID, title, and status
+- Per-story task completion counts and approval status
+- Per-task statuses (when viewing a specific story)
 
 ---
 
@@ -650,11 +707,15 @@ sdd/                                          # Marketplace repository
 │       │   │   ├── SKILL.md
 │       │   │   └── reference/
 │       │   │       └── development-plan-template.yaml
-│       │   └── sdd-implement/
-│       │       ├── SKILL.md
-│       │       └── reference/
-│       │           ├── role-profiles.md
-│       │           └── implementation-loop.md
+│       │   ├── sdd-implement/
+│       │   │   ├── SKILL.md
+│       │   │   └── reference/
+│       │   │       ├── role-profiles.md
+│       │   │       └── implementation-loop.md
+│       │   ├── sdd-approve/
+│       │   │   └── SKILL.md
+│       │   └── sdd-status/
+│       │       └── SKILL.md
 │       └── scripts/
 │           ├── setup.sh                      # Dependency installer
 │           └── sdd-util.sh                   # Utility CLI wrapper
@@ -667,6 +728,8 @@ sdd/                                          # Marketplace repository
 │   ├── plan_parser.py
 │   ├── index_manager.py
 │   ├── agent_context.py
+│   ├── approval_manager.py
+│   ├── status_reporter.py
 │   └── util_cli.py
 └── pyproject.toml                            # Python dependencies
 ```
@@ -706,6 +769,7 @@ id: "FEAT_NNN"
 title: "<title>"
 status: TODO | IN_PROGRESS | DONE
 theme: "THEME_NNN"
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -752,6 +816,7 @@ acceptance_criteria:
   - id: "AC_NNN"
     description: "[Given <precondition>,] when <action>, then <expected result>"
     status: "TODO"
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -769,6 +834,7 @@ depends_on: []
 ac_mapping: ["AC_NNN"]
 code_review: "APPROVED | CHANGES_REQUESTED"  # optional, set by code reviewer
 review_notes: "<feedback>"                     # optional, set by code reviewer
+approved: "YYYY-MM-DD"          # optional, set by /sdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -935,6 +1001,9 @@ The `sdd-util` CLI provides deterministic state operations that the skills call 
 | `sdd-util promote-story <path> --epic <dir>` | Promote a work story to the spec channel |
 | `sdd-util context-path <role> --epic <dir>` | Print the agent context file path |
 | `sdd-util read-context <role> --epic <dir>` | Print the agent context file contents |
+| `sdd-util status [name] [--type epic\|story]` | Show status of an epic, story, or all epics |
+| `sdd-util approve <step> <name>` | Mark artifacts as approved (step: feature, design, stories, tasks, plan) |
+| `sdd-util check-approval <step> <name>` | Check if prior step's artifacts are approved |
 
 ---
 

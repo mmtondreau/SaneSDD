@@ -31,6 +31,25 @@ If this fails, STOP and tell the user: "No epic found. Run `/sdd-design <feature
 
 Save the output as `<epic_dir>`. Verify that `<epic_dir>/high_level_design.md` exists. If not, STOP and tell the user: "No epic found. Run `/sdd-design <feature-name>` first to create the high-level design."
 
+## Approval Check
+
+Run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" check-approval design $ARGUMENTS
+```
+
+Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
+
+> **Warning:** The following artifacts from the previous step have not been approved:
+> - _(list each path from the `unapproved` array)_
+>
+> Run `/sdd-approve design <name>` to approve, or confirm you want to continue without approval.
+> **Continue without approval?**
+
+If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
+
+If `approved` is `true`, proceed silently.
+
 ## Context Import
 
 1. Read prior agent context for the product_manager role:
@@ -108,4 +127,4 @@ List the actual file paths that were generated — do not use glob patterns.
 
 4. Tell the user:
 
-> **Next step:** Run `/sdd-tasks <feature-name>` to generate implementation tasks from these stories.
+> **Next step:** Review the files above, then run `/sdd-approve stories <epic-name>` to approve. Then run `/sdd-tasks <feature-name>` to generate implementation tasks.

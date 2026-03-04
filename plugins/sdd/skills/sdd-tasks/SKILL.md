@@ -34,6 +34,25 @@ Save the output as `<epic_dir>`.
 3. Check that stories exist by globbing for `<epic_dir>/stories/STORY_*/story.md`.
 If no stories are found, STOP and tell the user: "No stories found. Run `/sdd-stories <feature-name>` first to generate user stories."
 
+## Approval Check
+
+Run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" check-approval stories $ARGUMENTS
+```
+
+Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
+
+> **Warning:** The following artifacts from the previous step have not been approved:
+> - _(list each path from the `unapproved` array)_
+>
+> Run `/sdd-approve stories <name>` to approve, or confirm you want to continue without approval.
+> **Continue without approval?**
+
+If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
+
+If `approved` is `true`, proceed silently.
+
 ## Context Import
 
 1. Read prior agent context for the tech_lead role:
@@ -100,4 +119,4 @@ List the actual file paths that were generated — do not use glob patterns.
 
 4. Tell the user:
 
-> **Next step:** Run `/sdd-plan <feature-name>` to create the execution plan.
+> **Next step:** Review the files above, then run `/sdd-approve tasks <epic-name>` to approve. Then run `/sdd-plan <feature-name>` to create the execution plan.

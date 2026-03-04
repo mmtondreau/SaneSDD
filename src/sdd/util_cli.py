@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 
 from sdd.agent_context import AgentContextManager
+from sdd.approval_manager import ApprovalManager
 from sdd.config import DESIGN_DIR, SPECS_DIR, WORK_DIR, find_project_root
 from sdd.design_manager import DesignManager
 from sdd.epic_manager import EpicManager
@@ -390,3 +391,32 @@ def status(ctx: click.Context, name: str | None, artifact_type: str | None) -> N
         return
 
     raise click.ClickException(f"'{name}' not found as epic or story")
+
+
+# ── Approval commands ────────────────────────────────────────────
+
+
+@cli.command("approve")
+@click.argument("step", type=click.Choice(ApprovalManager.STEPS))
+@click.argument("name")
+@click.pass_context
+def approve(ctx: click.Context, step: str, name: str) -> None:
+    """Approve artifacts from a workflow step."""
+    mgr = ApprovalManager(ctx.obj["root"])
+    result = mgr.approve(step, name)
+    if "error" in result:
+        raise click.ClickException(result["error"])
+    click.echo(json.dumps(result, indent=2))
+
+
+@cli.command("check-approval")
+@click.argument("step", type=click.Choice(ApprovalManager.STEPS))
+@click.argument("name")
+@click.pass_context
+def check_approval(ctx: click.Context, step: str, name: str) -> None:
+    """Check if artifacts from a prior step are approved."""
+    mgr = ApprovalManager(ctx.obj["root"])
+    result = mgr.check_approval(step, name)
+    if "error" in result:
+        raise click.ClickException(result["error"])
+    click.echo(json.dumps(result))

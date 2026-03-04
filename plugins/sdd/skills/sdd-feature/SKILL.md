@@ -96,7 +96,7 @@ List the actual file paths that were generated — do not use glob patterns.
 
 4. Tell the user:
 
-> **Next step:** Run `/sdd-design <feature-name>` to create the high-level design for this feature.
+> **Next step:** Review the files above, then run `/sdd-approve feature <feature-name>` to approve. Then run `/sdd-design <feature-name>` to create the high-level design.
 
 ## User Input
 $ARGUMENTS

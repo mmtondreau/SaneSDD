@@ -43,6 +43,25 @@ Save the JSON output as `<plan_json>`. Parse it and extract only the story entry
 
 Save the matching story's task list as `<story_tasks>`.
 
+## Approval Check
+
+Run:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" check-approval plan <epic_slug>
+```
+
+Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
+
+> **Warning:** The following artifacts from the previous step have not been approved:
+> - _(list each path from the `unapproved` array)_
+>
+> Run `/sdd-approve plan <name>` to approve, or confirm you want to continue without approval.
+> **Continue without approval?**
+
+If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
+
+If `approved` is `true`, proceed silently.
+
 ## Team Overrides
 
 Before starting, check for and read these files if they exist. Save each as the corresponding variable:
