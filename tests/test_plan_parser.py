@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from sdd.epic_manager import EpicManager
-from sdd.plan_parser import PlanParser
+from ssdd.epic_manager import EpicManager
+from ssdd.plan_parser import PlanParser
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

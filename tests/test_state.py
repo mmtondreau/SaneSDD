@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sdd.state import AcEntry, StateManager, Status
+from ssdd.state import AcEntry, StateManager, Status
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

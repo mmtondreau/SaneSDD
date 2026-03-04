@@ -1,4 +1,4 @@
-"""Tests for sdd-util status command."""
+"""Tests for ssdd-util status command."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import sdd.util_cli as _util_mod
-from sdd.util_cli import cli
+import ssdd.util_cli as _util_mod
+from ssdd.util_cli import cli
 
 
 @pytest.fixture

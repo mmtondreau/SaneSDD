@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from sdd.promotion_manager import PromotionManager
-from sdd.state import StateManager
+from ssdd.promotion_manager import PromotionManager
+from ssdd.state import StateManager
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

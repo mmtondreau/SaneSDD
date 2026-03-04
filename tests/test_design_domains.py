@@ -5,7 +5,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from sdd.design_manager import DesignManager
+from ssdd.design_manager import DesignManager
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

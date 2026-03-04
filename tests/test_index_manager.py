@@ -5,7 +5,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from sdd.index_manager import IndexManager
+from ssdd.index_manager import IndexManager
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -15,7 +15,7 @@ class TestIndexManager:
         mgr = IndexManager(tmp_project)
         mgr.regenerate()
         index = (tmp_project / "INDEX.md").read_text()
-        assert "# SDD Project Index" in index
+        assert "# SaneSDD Project Index" in index
         assert "No specifications defined yet" in index
         assert "No epics yet" in index
 

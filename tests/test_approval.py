@@ -11,9 +11,9 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-import sdd.util_cli as _util_mod
-from sdd.approval_manager import ApprovalManager
-from sdd.util_cli import cli
+import ssdd.util_cli as _util_mod
+from ssdd.approval_manager import ApprovalManager
+from ssdd.util_cli import cli
 
 
 @pytest.fixture

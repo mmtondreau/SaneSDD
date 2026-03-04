@@ -1,4 +1,4 @@
-"""Tests for sdd-util CLI commands."""
+"""Tests for ssdd-util CLI commands."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import sdd.util_cli as _util_mod
-from sdd.util_cli import cli
+import ssdd.util_cli as _util_mod
+from ssdd.util_cli import cli
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -47,7 +47,7 @@ class TestInit:
         runner = CliRunner()
         runner.invoke(cli, ["init", "--path", str(tmp_path)])
         index = (tmp_path / "INDEX.md").read_text()
-        assert "# SDD Project Index" in index
+        assert "# SaneSDD Project Index" in index
 
     def test_init_idempotent(self, tmp_path: Path) -> None:
         runner = CliRunner()

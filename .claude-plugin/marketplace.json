@@ -1,19 +1,19 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "sdd-marketplace",
+  "name": "sanessdd-marketplace",
   "owner": {
     "name": "Matthew Tondreau"
   },
   "metadata": {
-    "description": "Spec Driven Development plugin marketplace",
+    "description": "Sane Spec Driven Development plugin marketplace",
     "version": "0.1.0",
     "pluginRoot": "./plugins"
   },
   "plugins": [
     {
-      "name": "sdd",
-      "source": "./plugins/sdd",
-      "description": "Spec Driven Development - orchestrates Claude through phased, role-based development workflows",
+      "name": "ssdd",
+      "source": "./plugins/ssdd",
+      "description": "Sane Spec Driven Development - orchestrates Claude through phased, role-based development workflows",
       "version": "0.1.0",
       "author": {
         "name": "Matthew Tondreau"

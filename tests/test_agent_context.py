@@ -7,15 +7,15 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import sdd.util_cli as _util_mod
-from sdd.agent_context import AgentContextManager
-from sdd.util_cli import cli
+import ssdd.util_cli as _util_mod
+from ssdd.agent_context import AgentContextManager
+from ssdd.util_cli import cli
 
 
 SAMPLE_CONTEXT = """\
 ---
 role: "system_architect"
-skill: "sdd-design"
+skill: "ssdd-design"
 feature: "FEAT_001"
 workstream: "WS_001"
 last_updated: "2026-02-26T14:30:00"

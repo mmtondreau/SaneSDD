@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "sdd"
+name = "ssdd"
 version = "0.1.0"
-description = "Spec Driven Development - orchestrates Claude through phased workflows"
+description = "Sane Spec Driven Development - orchestrates Claude through phased workflows"
 authors = ["Matthew Tondreau"]
 
 license = "MIT"
-packages = [{include = "sdd", from = "src"}]
+packages = [{include = "ssdd", from = "src"}]
 
 [tool.poetry.scripts]
-sdd-util = "sdd.util_cli:cli"
+ssdd-util = "ssdd.util_cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -37,7 +37,7 @@ select = ["E", "F", "I", "N", "W", "UP"]
 [tool.mypy]
 python_version = "3.10"
 strict = true
-packages = ["sdd"]
+packages = ["ssdd"]
 mypy_path = "src"
 
 [tool.pytest.ini_options]

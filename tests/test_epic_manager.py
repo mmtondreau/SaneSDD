@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sdd.epic_manager import EpicManager
+from ssdd.epic_manager import EpicManager
 
 
 class TestEpicManager:

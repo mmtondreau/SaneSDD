@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from sdd.state import EpicLocation, StateManager
+from ssdd.state import EpicLocation, StateManager
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
