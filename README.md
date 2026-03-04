@@ -215,6 +215,10 @@ Initializes a new SDD project by creating the required directory structure.
 **What happens:**
 1. Creates `specs/`, `work/`, and `design/` directories (skips any that already exist)
 2. Generates an initial `INDEX.md`
+3. For existing projects: surveys the codebase and generates design documentation:
+   - `design/design.md` — system-wide architecture
+   - `design/DOMAIN_NNN_slug/domain.md` — one per bounded context (breadth-first)
+   - `design/DOMAIN_NNN_slug/COMP_<name>.md` — component docs within each domain
 
 **Next step:** `/sdd-feature`
 
@@ -473,7 +477,7 @@ Here is the complete end-to-end workflow for building a feature:
 /sdd-init
 ```
 
-Creates the `specs/`, `work/`, and `design/` directories. Only needed once per project.
+Creates the `specs/`, `work/`, and `design/` directories. Only needed once per project. For existing projects, also generates design documentation (domains and components) from the codebase.
 
 ### Step 1: Define the Feature
 
@@ -607,6 +611,7 @@ sdd/                                          # Marketplace repository
 │       │   │   └── reference/
 │       │   │       ├── high-level-design-template.md
 │       │   │       ├── design-template.md
+│       │   │       ├── domain-template.md
 │       │   │       └── component-design-template.md
 │       │   ├── sdd-stories/
 │       │   │   ├── SKILL.md
