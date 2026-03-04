@@ -87,6 +87,22 @@ After completing all steps, tell the user:
 
 > **Next step:** Run `/sdd-feature` to define your first feature. Run `/sdd-help` for a full workflow overview.
 
-If design documents were generated for an existing project, also tell the user:
+If design documents were generated for an existing project, also display a **Files to review** section listing every file that was created or modified, grouped by type. Use this format:
 
-> Design documents have been generated from your existing codebase. Review `design/design.md` and `design/DOMAIN_*/COMP_*.md` to verify accuracy, then use `/sdd-feature` to define your next feature.
+> **Files to review:**
+>
+> System architecture:
+> - `design/design.md`
+>
+> Domains:
+> - `design/DOMAIN_001_<name>/domain.md`
+> - `design/DOMAIN_002_<name>/domain.md`
+> - _(list all)_
+>
+> Components:
+> - `design/DOMAIN_001_<name>/COMP_<name>.md`
+> - _(list all)_
+
+List the actual file paths that were generated — do not use glob patterns. Then tell the user:
+
+> Review these files for accuracy before proceeding. Domains define your system's bounded contexts; components detail the internal structure. Use `/sdd-feature` to define your next feature.

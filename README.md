@@ -479,6 +479,10 @@ Here is the complete end-to-end workflow for building a feature:
 
 Creates the `specs/`, `work/`, and `design/` directories. Only needed once per project. For existing projects, also generates design documentation (domains and components) from the codebase.
 
+- **Inputs:** Existing codebase (optional), user-provided documentation (optional)
+- **Outputs:** `specs/`, `work/`, `design/` directories, `INDEX.md`, and for existing projects: `design/design.md`, `design/DOMAIN_NNN_slug/domain.md`, `design/DOMAIN_NNN_slug/COMP_<name>.md`
+- **Review:** For existing projects, review `design/design.md` for system-wide accuracy, and each `domain.md` for correct bounded context boundaries
+
 ### Step 1: Define the Feature
 
 ```
@@ -487,16 +491,21 @@ Creates the `specs/`, `work/`, and `design/` directories. Only needed once per p
 
 Interactive session. Describe what you want to build. Claude (as Product Manager) asks clarifying questions and writes a structured feature spec with success criteria.
 
+- **Inputs:** User description of desired feature, existing `design/design.md` (if present)
+- **Outputs:** `specs/THEME_NNN_slug/theme.md`, `specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`
+- **Review:** `feature.md` — verify problem statement, success criteria, and scope match your intent
+
 ### Step 2: Create the Design
 
 ```
 /sdd-design checkout_resume
 ```
 
-Interactive session. Claude (as System Architect) reads the feature spec, discusses architecture with you, and produces:
-- An epic with `high_level_design.md`
-- Detailed `design/DOMAIN_NNN_slug/COMP_<name>.md` for each component
-- An updated `design/design.md` with the system-wide view
+Interactive session. Claude (as System Architect) reads the feature spec, discusses architecture with you, and produces the epic and design artifacts.
+
+- **Inputs:** `specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`, `design/design.md`, existing `design/DOMAIN_NNN_slug/domain.md` files
+- **Outputs:** `work/EPIC_NNN_slug/epic.md`, `work/EPIC_NNN_slug/high_level_design.md`, `design/design.md` (updated), `design/DOMAIN_NNN_slug/domain.md` (new or updated), `design/DOMAIN_NNN_slug/COMP_<name>.md` (new or updated)
+- **Review:** `high_level_design.md` — verify architecture decisions, component boundaries, and data flow. Check `COMP_<name>.md` files for accurate public interfaces and data models
 
 ### Step 3: Generate Stories
 
@@ -506,6 +515,10 @@ Interactive session. Claude (as System Architect) reads the feature spec, discus
 
 Automated. Claude (as Product Manager) breaks the feature into work stories with Given-When-Then acceptance criteria, stored in the work channel under the epic.
 
+- **Inputs:** `specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`, `work/EPIC_NNN_slug/epic.md`, `work/EPIC_NNN_slug/high_level_design.md`
+- **Outputs:** `work/EPIC_NNN_slug/stories/STORY_NNN/story.md` (one per story)
+- **Review:** Each `story.md` — verify acceptance criteria are testable, complete, and use correct Given-When-Then format
+
 ### Step 4: Generate Tasks
 
 ```
@@ -514,6 +527,10 @@ Automated. Claude (as Product Manager) breaks the feature into work stories with
 
 Automated. Claude (as Tech Lead) creates implementation tasks from the stories, each mapped to specific ACs. Verifies complete AC coverage.
 
+- **Inputs:** `work/EPIC_NNN_slug/stories/STORY_NNN/story.md`, `work/EPIC_NNN_slug/high_level_design.md`, `design/DOMAIN_NNN_slug/COMP_<name>.md`
+- **Outputs:** `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` (one per task)
+- **Review:** Each `TASK_NNN_slug.md` — verify AC mappings are complete (every AC is covered) and task scope is reasonable
+
 ### Step 5: Create the Plan
 
 ```
@@ -521,6 +538,10 @@ Automated. Claude (as Tech Lead) creates implementation tasks from the stories, 
 ```
 
 Automated. Claude (as Tech Lead) orders all tasks respecting dependencies into an execution plan with effort estimates and risk assessment.
+
+- **Inputs:** `work/EPIC_NNN_slug/stories/STORY_NNN/story.md`, `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
+- **Outputs:** `work/EPIC_NNN_slug/development_plan.yaml`
+- **Review:** `development_plan.yaml` — verify story ordering, task dependencies, and effort estimates make sense
 
 ### Step 6: Implement
 
@@ -534,6 +555,10 @@ Automated multi-role loop. For each story in plan order, Claude cycles through:
 3. **Task QA** — validates done criteria, runs tests, checks coverage
 4. **Story QA** — validates all ACs are satisfied, promotes story to spec channel
 5. **Tech Lead** — creates remediation tasks for any gaps
+
+- **Inputs:** `work/EPIC_NNN_slug/development_plan.yaml`, all story and task files, `design/DOMAIN_NNN_slug/COMP_<name>.md`
+- **Outputs:** Implementation code, updated task/story frontmatter statuses, `specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md` (promoted stories)
+- **Review:** Promoted spec stories for accuracy, implementation code for quality, and any tasks marked BLOCKED for unresolved issues
 
 ### Checking Progress
 
