@@ -1,4 +1,4 @@
-"""Thin utility CLI for SaneSaneSDD state operations, callable from Claude Code skills."""
+"""Thin utility CLI for SaneSDD state operations, callable from Claude Code skills."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def cli(ctx: click.Context) -> None:
     help="Directory to initialize (defaults to current directory)",
 )
 def init(path: str) -> None:
-    """Initialize a new SaneSDD project with specs/, work/, design/ directories."""
+    """Initialize a new SaneSDD project with .ssdd/ directory structure."""
     root = Path(path).resolve()
 
     created: list[str] = []

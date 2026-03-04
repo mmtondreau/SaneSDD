@@ -1,25 +1,27 @@
-"""Global design/ directory management."""
+"""Global .ssdd/design/ directory management."""
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
+from ssdd.config import DESIGN_DIR
+
 
 _COMP_GLOB = "COMP_*.md"
 
 
 class DesignManager:
-    """Manages the global design/ directory.
+    """Manages the global .ssdd/design/ directory.
 
     Contains:
-    - design/design.md: overarching system design
-    - design/DOMAIN_NNN_slug/domain.md: bounded context descriptions
-    - design/DOMAIN_NNN_slug/COMP_*.md: component-level design documents
+    - .ssdd/design/design.md: overarching system design
+    - .ssdd/design/DOMAIN_NNN_slug/domain.md: bounded context descriptions
+    - .ssdd/design/DOMAIN_NNN_slug/COMP_*.md: component-level design documents
     """
 
     def __init__(self, project_root: Path) -> None:
-        self._dir = project_root / "design"
+        self._dir = project_root / DESIGN_DIR
 
     def ensure_dir(self) -> Path:
         self._dir.mkdir(parents=True, exist_ok=True)

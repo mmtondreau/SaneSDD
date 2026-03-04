@@ -44,7 +44,7 @@ If arguments are provided but invalid (wrong step name, missing name), explain t
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" approve <step> <name>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" approve <step> <name>
 ```
 
 If the command fails, report the error to the user and STOP.

@@ -16,7 +16,7 @@ You are the orchestrator for merging a completed story branch to the base branch
 ### 1. Find the Story
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-story $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-story $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "Story not found. Check the story ID and try again."
 
@@ -33,7 +33,7 @@ If status is NOT `DONE`, STOP and tell the user:
 ### 3. Find the Epic
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-epic <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-epic <feature_slug>
 ```
 
 Save the output as `<epic_dir>`.
@@ -109,7 +109,7 @@ git branch -d "story/<branch_name>"
 
 Regenerate the index:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 **If merge fails (conflict):**

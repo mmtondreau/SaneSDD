@@ -17,7 +17,7 @@ Before proceeding, verify the required inputs exist:
 
 1. Check that the feature exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-feature $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/ssdd-feature` first to create a feature specification."
 
@@ -27,7 +27,7 @@ Save the output as `<feature_slug>` (e.g., `FEAT_001_checkout_resume`).
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" check-approval feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval feature $ARGUMENTS
 ```
 
 Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
@@ -46,7 +46,7 @@ If `approved` is `true`, proceed silently.
 
 Create an epic:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" create-epic <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" create-epic <feature_slug>
 ```
 
 Save the output as `<epic_dir>`.
@@ -55,21 +55,21 @@ Save the output as `<epic_dir>`.
 
 1. Read prior agent context:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context system_architect --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context system_architect --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`. If empty, there is no prior context.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" context-path system_architect --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" context-path system_architect --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
 3. Check for cross-role context from the Product Manager (feature definition phase):
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context product_manager --feature <feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context product_manager --feature <feature_dir>
 ```
-Where `<feature_dir>` is `specs/<feature_slug>`. Save any output as `PM_CONTEXT`.
+Where `<feature_dir>` is `.ssdd/specs/<feature_slug>`. Save any output as `PM_CONTEXT`.
 
 ## Team Overrides
 
@@ -107,7 +107,7 @@ Wait for the sub-agent to complete.
 
 1. Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 2. Report the sub-agent's results to the user.
@@ -117,18 +117,18 @@ Wait for the sub-agent to complete.
 > **Files to review:**
 >
 > Epic:
-> - `work/EPIC_NNN_slug/epic.md`
-> - `work/EPIC_NNN_slug/high_level_design.md`
+> - `.ssdd/work/EPIC_NNN_slug/epic.md`
+> - `.ssdd/work/EPIC_NNN_slug/high_level_design.md`
 >
 > System architecture:
-> - `design/design.md`
+> - `.ssdd/design/design.md`
 >
 > Domains:
-> - `design/DOMAIN_NNN_slug/domain.md`
+> - `.ssdd/design/DOMAIN_NNN_slug/domain.md`
 > - _(list all new or updated)_
 >
 > Components:
-> - `design/DOMAIN_NNN_slug/COMP_slug.md`
+> - `.ssdd/design/DOMAIN_NNN_slug/COMP_slug.md`
 > - _(list all new or updated)_
 
 List the actual file paths that were generated — do not use glob patterns.

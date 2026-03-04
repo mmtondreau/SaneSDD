@@ -17,7 +17,7 @@ Before proceeding, verify the required inputs exist:
 
 1. Check that the feature exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-feature $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/ssdd-feature` first to create a feature specification."
 
@@ -25,7 +25,7 @@ Save the output as `<feature_slug>`.
 
 2. Check that an epic with a high_level_design.md exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-epic $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-epic $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "No epic found. Run `/ssdd-design <feature-name>` first to create the high-level design."
 
@@ -35,7 +35,7 @@ Save the output as `<epic_dir>`. Verify that `<epic_dir>/high_level_design.md` e
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" check-approval design $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval design $ARGUMENTS
 ```
 
 Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
@@ -54,25 +54,25 @@ If `approved` is `true`, proceed silently.
 
 1. Read prior agent context for the product_manager role:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context product_manager --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context product_manager --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" context-path product_manager --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" context-path product_manager --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
 3. Check for cross-role context from the Product Manager (feature definition phase):
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context product_manager --feature specs/<feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context product_manager --feature .ssdd/specs/<feature_slug>
 ```
 Save any output as `PM_FEATURE_CONTEXT`.
 
 4. Check for cross-role context from the System Architect:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context system_architect --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context system_architect --epic <epic_dir>
 ```
 Save any output as `ARCHITECT_CONTEXT`.
 
@@ -110,7 +110,7 @@ Wait for the sub-agent to complete.
 
 1. Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 2. Report the sub-agent's results to the user.
@@ -120,7 +120,7 @@ Wait for the sub-agent to complete.
 > **Files to review:**
 >
 > Stories:
-> - `work/EPIC_NNN_slug/stories/STORY_NNN/story.md`
+> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`
 > - _(list all)_
 
 List the actual file paths that were generated — do not use glob patterns.

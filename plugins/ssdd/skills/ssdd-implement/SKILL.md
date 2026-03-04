@@ -19,7 +19,7 @@ Before proceeding, verify the required inputs exist:
 
 1. Check that the story exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-story <argument>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-story <argument>
 ```
 If this fails, STOP and tell the user: "Story not found. Run `/ssdd-stories <feature-name>` first to generate user stories."
 
@@ -27,7 +27,7 @@ Parse the JSON output to get `<story_path>`, `<story_id>`, `<feature_dir>`, `<fe
 
 2. Check that the epic exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-epic <feature_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-epic <feature_slug>
 ```
 If this fails, STOP and tell the user: "No epic found. Run `/ssdd-design <feature-name>` first to create the high-level design."
 
@@ -35,7 +35,7 @@ Save the output as `<epic_dir>`.
 
 3. Check that the development plan exists and contains this story:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" plan-json <epic_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" plan-json <epic_slug>
 ```
 If this fails, STOP and tell the user: "No development plan found. Run `/ssdd-plan <feature-name>` first to create the execution plan."
 
@@ -47,7 +47,7 @@ Save the matching story's task list as `<story_tasks>`.
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" check-approval plan <epic_slug>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval plan <epic_slug>
 ```
 
 Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
@@ -75,7 +75,7 @@ Before starting, check for and read these files if they exist. Save each as the 
 
 Read prior context for all five roles. For each role, run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context <role> --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context <role> --epic <epic_dir>
 ```
 Where `<role>` is: `developer`, `code_reviewer`, `task_qa`, `story_qa`, `tech_lead`.
 
@@ -83,7 +83,7 @@ Save each non-empty result as `<ROLE>_PRIOR_CONTEXT`.
 
 Also get context export paths for all five roles:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" context-path <role> --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" context-path <role> --epic <epic_dir>
 ```
 Save each as `<role>_context_export_path`.
 
@@ -221,7 +221,7 @@ Wait for completion. Update `STORY_QA_PRIOR_CONTEXT` by reading the story_qa con
 
 Re-read the story file. If the story status is `DONE` (Story QA passed), promote the work story to the spec channel:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" promote-story <story_path> --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" promote-story <story_path> --epic <epic_dir>
 ```
 
 If the story is not `DONE`, skip this step and proceed to Step 5 (Remediation).
@@ -254,7 +254,7 @@ After remediation, the new tasks need to be processed. Re-read the story's task 
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 Report a summary of results:
@@ -270,12 +270,12 @@ Display a **Files to review** section listing every file that was created or mod
 > **Files to review:**
 >
 > Updated stories and tasks:
-> - `work/EPIC_NNN_slug/stories/STORY_NNN/story.md`
-> - `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
+> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`
+> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
 > - _(list all updated)_
 >
 > Promoted spec stories (if any):
-> - `specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md`
+> - `.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md`
 > - _(list all promoted)_
 
 List the actual file paths — do not use glob patterns.

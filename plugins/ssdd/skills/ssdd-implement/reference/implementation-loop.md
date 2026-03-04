@@ -20,7 +20,7 @@ Implement the assigned task to completion, satisfying all done criteria.
 ### Process
 1. Read and understand the task specification and done criteria.
 2. Read the parent story for user-value context.
-3. Read relevant design documents (design/design.md, design/DOMAIN_*/COMP_*.md).
+3. Read relevant design documents (design/design.md, .ssdd/design/DOMAIN_*/COMP_*.md).
 4. Read existing code in areas you will modify.
 5. Implement the solution:
    a. Write production code.
@@ -56,7 +56,7 @@ Review the developer's code changes for quality, correctness, design adherence, 
 ### Review Steps (execute ALL)
 
 #### 1. Design Adherence Check
-Compare implementation against design/design.md and design/DOMAIN_*/COMP_*.md. Flag any divergence that wasn't documented.
+Compare implementation against .ssdd/design/design.md and .ssdd/design/DOMAIN_*/COMP_*.md. Flag any divergence that wasn't documented.
 
 #### 2. Code Quality Check
 Review naming, structure, readability, and DRY principles. Flag code smells or unnecessary complexity.

@@ -9,6 +9,8 @@ from typing import Any
 
 import frontmatter
 
+from ssdd.config import WORK_DIR
+
 
 @dataclass
 class TaskStatus:
@@ -51,7 +53,7 @@ class StatusReporter:
 
     def __init__(self, project_root: Path) -> None:
         self._root = project_root
-        self._work_dir = project_root / "work"
+        self._work_dir = project_root / WORK_DIR
 
     def _list_epic_dirs(self) -> list[Path]:
         """List all EPIC_* directories under work/."""

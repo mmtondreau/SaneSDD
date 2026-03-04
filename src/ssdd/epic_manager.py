@@ -1,20 +1,22 @@
-"""Epic lifecycle management under work/."""
+"""Epic lifecycle management under .ssdd/work/."""
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
 
+from ssdd.config import WORK_DIR
+
 
 class EpicManager:
-    """Manages epic directories under work/.
+    """Manages epic directories under .ssdd/work/.
 
     Each epic (EPIC_001, EPIC_002, ...) is a self-contained unit of work.
     Epics replace workstreams entirely.
     """
 
     def __init__(self, project_root: Path) -> None:
-        self._work_dir = project_root / "work"
+        self._work_dir = project_root / WORK_DIR
 
     def next_number(self) -> int:
         """Scan work/ for EPIC_### directories and return the next number."""

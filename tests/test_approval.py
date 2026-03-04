@@ -52,7 +52,7 @@ class TestApproveFeature:
 class TestApproveDesign:
     def test_approves_hld(self, project_with_epic: Path) -> None:
         # Create an HLD file
-        epic_dir = project_with_epic / "work" / "EPIC_001_checkout_resume"
+        epic_dir = project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         hld = epic_dir / "high_level_design.md"
         hld.write_text("# High-Level Design\n\nSome design content.\n")
         mgr = ApprovalManager(project_with_epic)
@@ -63,7 +63,7 @@ class TestApproveDesign:
         assert post.metadata["approved"]
 
     def test_hld_with_existing_frontmatter(self, project_with_epic: Path) -> None:
-        epic_dir = project_with_epic / "work" / "EPIC_001_checkout_resume"
+        epic_dir = project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         hld = epic_dir / "high_level_design.md"
         hld.write_text(
             '---\nepic: "EPIC_001"\ntitle: "Checkout Resume"\n---\n\n# Design\n'
@@ -116,7 +116,7 @@ class TestApprovePlan:
         assert result["step"] == "plan"
         # Verify YAML was updated
         plan_path = (
-            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
             / "development_plan.yaml"
         )
         data = yaml.safe_load(plan_path.read_text())
@@ -151,7 +151,7 @@ class TestCheckApproval:
         mgr = ApprovalManager(project_with_epic)
         # Approve only one story manually
         story_file = (
-            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
             / "stories" / "STORY_001" / "story.md"
         )
         post = frontmatter.load(str(story_file))

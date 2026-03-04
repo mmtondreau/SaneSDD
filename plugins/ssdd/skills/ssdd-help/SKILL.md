@@ -41,7 +41,7 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 
 | Command | Role | Mode | Description |
 |---------|------|------|-------------|
-| `/ssdd-init` | — | Auto | Create `specs/`, `work/`, `design/` directories and `INDEX.md` |
+| `/ssdd-init` | — | Auto | Create `.ssdd/specs/`, `.ssdd/work/`, `.ssdd/design/` directories and `INDEX.md` |
 | `/ssdd-feature` | Product Manager | Interactive | Define a new feature specification |
 | `/ssdd-design <name>` | System Architect | Interactive | Create high-level design, set up epic + domain components |
 | `/ssdd-stories <name>` | Product Manager | Auto | Generate work stories with acceptance criteria (in epic) |
@@ -159,7 +159,7 @@ If you proceed to the next step without approving, SaneSDD will warn you and lis
 - **Branching:** Each story runs on its own `story/STORY_NNN_slug` branch. Use `/ssdd-merge` to merge back to main.
 - **Resumability:** `/ssdd-implement` skips DONE tasks. Safe to re-run for the same story.
 - **INDEX.md:** Auto-generated after each command. Check it for project status.
-- **Epics:** Running `/ssdd-design` creates an epic in `work/`. Each epic is an independent unit of change.
+- **Epics:** Running `/ssdd-design` creates an epic in `.ssdd/work/`. Each epic is an independent unit of change.
 - **Promotion:** When a work story passes Story QA, it is automatically promoted to the spec channel as living documentation.
 - **Pre-checks:** Each command validates its inputs and tells you what to run first if something is missing.
 - **Approval gates:** Each command checks if the prior step's artifacts have been approved. You can skip approval, but SaneSDD will warn you.

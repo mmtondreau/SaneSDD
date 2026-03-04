@@ -17,7 +17,7 @@ Before proceeding, verify the required inputs exist:
 
 1. Check that the feature exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-feature $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "Feature not found. Run `/ssdd-feature` first to create a feature specification."
 
@@ -25,7 +25,7 @@ Save the output as `<feature_slug>`.
 
 2. Check that the epic exists:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-epic $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-epic $ARGUMENTS
 ```
 If this fails, STOP and tell the user: "No epic found. Run `/ssdd-design <feature-name>` first to create the high-level design."
 
@@ -38,7 +38,7 @@ If no tasks are found, STOP and tell the user: "No tasks found. Run `/ssdd-tasks
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" check-approval tasks $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval tasks $ARGUMENTS
 ```
 
 Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
@@ -57,13 +57,13 @@ If `approved` is `true`, proceed silently.
 
 1. Read prior agent context for the tech_lead role:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context tech_lead --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context tech_lead --epic <epic_dir>
 ```
 Save any output as `PRIOR_CONTEXT`. This may include context from the `/ssdd-tasks` phase since both use the tech_lead role.
 
 2. Get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" context-path tech_lead --epic <epic_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" context-path tech_lead --epic <epic_dir>
 ```
 Save the output as `<context_export_path>`.
 
@@ -99,7 +99,7 @@ Wait for the sub-agent to complete.
 
 1. Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 2. Report the sub-agent's results to the user.
@@ -107,7 +107,7 @@ Wait for the sub-agent to complete.
 3. Display a **Files to review** section listing every file that was created or modified. Use this format:
 
 > **Files to review:**
-> - `work/EPIC_NNN_slug/development_plan.yaml`
+> - `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
 
 List the actual file path that was generated.
 

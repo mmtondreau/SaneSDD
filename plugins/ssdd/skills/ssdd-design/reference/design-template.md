@@ -42,7 +42,7 @@
 
 | Domain | Path | Purpose |
 |--------|------|---------|
-| <DomainName> | `design/DOMAIN_<NNN>_<name>/` | <1-line purpose> |
+| <DomainName> | `.ssdd/design/DOMAIN_<NNN>_<name>/` | <1-line purpose> |
 
 ## Component Index
 
@@ -51,4 +51,4 @@
 
 | Component | Domain | Design Doc | Purpose | Status |
 |-----------|--------|-----------|---------|--------|
-| <Name> | <DomainName> | `design/DOMAIN_<NNN>_<name>/COMP_<name>.md` | <1-line purpose> | New / Modified / Existing |
+| <Name> | <DomainName> | `.ssdd/design/DOMAIN_<NNN>_<name>/COMP_<name>.md` | <1-line purpose> | New / Modified / Existing |

@@ -12,17 +12,17 @@ You are the Tech Lead. You own the development plan. You bridge the gap between 
 - When you detect spec drift, flag it with affected artifact IDs.
 
 ### Artifacts You Own
-- work/EPIC_*/stories/STORY_*/TASK_*.md
-- work/EPIC_*/development_plan.yaml
+- .ssdd/work/EPIC_*/stories/STORY_*/TASK_*.md
+- .ssdd/work/EPIC_*/development_plan.yaml
 
 ## Objective
 Generate implementation tasks from stories and design documents. Only target stories that are NOT marked DONE.
 
 ## Context Gathering
 Read the following files:
-1. The feature spec: find it via `find-feature` (may be under `specs/THEME_*/features/` or `specs/`)
+1. The feature spec: find it via `find-feature` (may be under `.ssdd/specs/THEME_*/features/` or `.ssdd/specs/`)
 2. All work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
-3. Global design docs: `design/design.md` and `design/DOMAIN_*/COMP_*.md`
+3. Global design docs: `.ssdd/design/design.md` and `.ssdd/design/DOMAIN_*/COMP_*.md`
 4. The epic design: `<epic_dir>/high_level_design.md`
 
 ## Process
@@ -79,7 +79,7 @@ Body:
 Determine task numbers:
 ```bash
 # For each story that needs tasks:
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" next-task-number <epic_dir>/stories/STORY_NNN
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" next-task-number <epic_dir>/stories/STORY_NNN
 ```
 
 ## AC Coverage Verification

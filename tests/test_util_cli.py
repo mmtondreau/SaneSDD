@@ -38,15 +38,15 @@ class TestInit:
         runner = CliRunner()
         result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
         assert result.exit_code == 0
-        assert (tmp_path / "specs").is_dir()
-        assert (tmp_path / "work").is_dir()
-        assert (tmp_path / "design").is_dir()
-        assert (tmp_path / "INDEX.md").exists()
+        assert (tmp_path / ".ssdd" / "specs").is_dir()
+        assert (tmp_path / ".ssdd" / "work").is_dir()
+        assert (tmp_path / ".ssdd" / "design").is_dir()
+        assert (tmp_path / ".ssdd" / "INDEX.md").exists()
 
     def test_init_creates_index(self, tmp_path: Path) -> None:
         runner = CliRunner()
         runner.invoke(cli, ["init", "--path", str(tmp_path)])
-        index = (tmp_path / "INDEX.md").read_text()
+        index = (tmp_path / ".ssdd" / "INDEX.md").read_text()
         assert "# SaneSDD Project Index" in index
 
     def test_init_idempotent(self, tmp_path: Path) -> None:
@@ -57,12 +57,12 @@ class TestInit:
         assert "already initialized" in result.output
 
     def test_init_partial_existing(self, tmp_path: Path) -> None:
-        (tmp_path / "specs").mkdir()
+        (tmp_path / ".ssdd" / "specs").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["init", "--path", str(tmp_path)])
         assert result.exit_code == 0
-        assert (tmp_path / "work").is_dir()
-        assert (tmp_path / "design").is_dir()
+        assert (tmp_path / ".ssdd" / "work").is_dir()
+        assert (tmp_path / ".ssdd" / "design").is_dir()
 
 
 class TestNextFeatureNumber:
@@ -84,7 +84,7 @@ class TestNextFeatureNumber:
 class TestNextStoryNumber:
     def test_returns_1_for_empty_feature(self, project_with_feature: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(project_with_feature)
-        feat_dir = project_with_feature / "specs" / "FEAT_001_checkout_resume"
+        feat_dir = project_with_feature / ".ssdd" / "specs" / "FEAT_001_checkout_resume"
         runner = CliRunner()
         result = runner.invoke(cli, ["next-story-number", str(feat_dir)])
         assert result.exit_code == 0
@@ -92,7 +92,7 @@ class TestNextStoryNumber:
 
     def test_returns_next_after_existing(self, project_with_stories: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(project_with_stories)
-        feat_dir = project_with_stories / "specs" / "FEAT_001_checkout_resume"
+        feat_dir = project_with_stories / ".ssdd" / "specs" / "FEAT_001_checkout_resume"
         runner = CliRunner()
         result = runner.invoke(cli, ["next-story-number", str(feat_dir)])
         assert result.exit_code == 0
@@ -102,7 +102,7 @@ class TestNextStoryNumber:
 class TestNextTaskNumber:
     def test_returns_1_for_empty_dir(self, project_with_epic: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(project_with_epic)
-        story_dir = project_with_epic / "work" / "EPIC_001_checkout_resume" / "stories" / "STORY_003"
+        story_dir = project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume" / "stories" / "STORY_003"
         story_dir.mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["next-task-number", str(story_dir)])
@@ -111,7 +111,7 @@ class TestNextTaskNumber:
 
     def test_returns_next_after_existing(self, project_with_epic: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(project_with_epic)
-        story_dir = project_with_epic / "work" / "EPIC_001_checkout_resume" / "stories" / "STORY_001"
+        story_dir = project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume" / "stories" / "STORY_001"
         runner = CliRunner()
         result = runner.invoke(cli, ["next-task-number", str(story_dir)])
         assert result.exit_code == 0
@@ -148,7 +148,7 @@ class TestRegenerateIndex:
         result = runner.invoke(cli, ["regenerate-index"])
         assert result.exit_code == 0
         assert "regenerated" in result.output
-        assert (project_with_feature / "INDEX.md").exists()
+        assert (project_with_feature / ".ssdd" / "INDEX.md").exists()
 
 
 class TestPlanJson:
@@ -195,7 +195,7 @@ class TestNextThemeNumber:
 
     def test_returns_next_after_existing(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "specs" / "THEME_001_ecommerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "specs" / "THEME_001_ecommerce").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["next-theme-number"])
         assert result.exit_code == 0
@@ -205,7 +205,7 @@ class TestNextThemeNumber:
 class TestFindTheme:
     def test_finds_by_substring(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "specs" / "THEME_001_ecommerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "specs" / "THEME_001_ecommerce").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["find-theme", "ecommerce"])
         assert result.exit_code == 0
@@ -222,7 +222,7 @@ class TestFindTheme:
 class TestNextFeatureNumberInTheme:
     def test_returns_1_for_empty_theme(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        theme_dir = tmp_project / "specs" / "THEME_001_ecommerce"
+        theme_dir = tmp_project / ".ssdd" / "specs" / "THEME_001_ecommerce"
         theme_dir.mkdir(parents=True)
         (theme_dir / "features").mkdir()
         runner = CliRunner()
@@ -232,7 +232,7 @@ class TestNextFeatureNumberInTheme:
 
     def test_returns_next_after_existing(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        theme_dir = tmp_project / "specs" / "THEME_001_ecommerce"
+        theme_dir = tmp_project / ".ssdd" / "specs" / "THEME_001_ecommerce"
         (theme_dir / "features" / "FEAT_001_checkout").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["next-feature-number-in-theme", str(theme_dir)])
@@ -250,7 +250,7 @@ class TestNextEpicNumber:
 
     def test_returns_next_after_existing(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "work" / "EPIC_001_test").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "work" / "EPIC_001_test").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["next-epic-number"])
         assert result.exit_code == 0
@@ -260,7 +260,7 @@ class TestNextEpicNumber:
 class TestFindEpic:
     def test_finds_by_substring(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "work" / "EPIC_001_checkout").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "work" / "EPIC_001_checkout").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["find-epic", "checkout"])
         assert result.exit_code == 0
@@ -281,7 +281,7 @@ class TestCreateEpic:
         result = runner.invoke(cli, ["create-epic", "checkout"])
         assert result.exit_code == 0
         assert "EPIC_001_checkout" in result.output
-        epic_dir = tmp_project / "work" / "EPIC_001_checkout"
+        epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_checkout"
         assert epic_dir.is_dir()
         assert (epic_dir / "stories").is_dir()
 
@@ -304,7 +304,7 @@ class TestNextDomainNumber:
 
     def test_returns_next_after_existing(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["next-domain-number"])
         assert result.exit_code == 0
@@ -314,7 +314,7 @@ class TestNextDomainNumber:
 class TestFindDomain:
     def test_finds_by_substring(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
-        (tmp_project / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
         runner = CliRunner()
         result = runner.invoke(cli, ["find-domain", "commerce"])
         assert result.exit_code == 0
@@ -332,7 +332,7 @@ class TestPromoteStory:
     def test_promotes_story(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
         patch_root(tmp_project)
         # Set up epic with work story
-        epic_dir = tmp_project / "work" / "EPIC_001_checkout"
+        epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_checkout"
         epic_dir.mkdir(parents=True)
         (epic_dir / "stories").mkdir()
         shutil.copy(FIXTURES_DIR / "sample_epic.md", epic_dir / "epic.md")
@@ -348,6 +348,6 @@ class TestPromoteStory:
         ])
         assert result.exit_code == 0
         # Spec story should have been created
-        specs_dir = tmp_project / "specs"
+        specs_dir = tmp_project / ".ssdd" / "specs"
         theme_dirs = [d for d in specs_dir.iterdir() if d.is_dir()]
         assert len(theme_dirs) > 0

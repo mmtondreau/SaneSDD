@@ -17,7 +17,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 def project_for_promotion(tmp_project: Path) -> Path:
     """Project with an epic containing a completed work story."""
     # Create epic with spec_theme and spec_feature references
-    epic_dir = tmp_project / "work" / "EPIC_001_checkout_resume"
+    epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_checkout_resume"
     epic_dir.mkdir(parents=True)
     (epic_dir / "stories").mkdir()
     shutil.copy(FIXTURES_DIR / "sample_epic.md", epic_dir / "epic.md")
@@ -33,20 +33,20 @@ def project_for_promotion(tmp_project: Path) -> Path:
 class TestPromotionManager:
     def test_promote_story_creates_theme(self, project_for_promotion: Path) -> None:
         mgr = PromotionManager(project_for_promotion)
-        epic_dir = project_for_promotion / "work" / "EPIC_001_checkout_resume"
+        epic_dir = project_for_promotion / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         story_path = epic_dir / "stories" / "STORY_001" / "story.md"
 
         spec_path = mgr.promote_story(story_path, epic_dir)
 
         assert spec_path.exists()
         # Theme should have been created
-        specs_dir = project_for_promotion / "specs"
+        specs_dir = project_for_promotion / ".ssdd" / "specs"
         theme_dirs = [d for d in specs_dir.iterdir() if d.is_dir() and "THEME" in d.name]
         assert len(theme_dirs) == 1
 
     def test_promote_story_creates_feature(self, project_for_promotion: Path) -> None:
         mgr = PromotionManager(project_for_promotion)
-        epic_dir = project_for_promotion / "work" / "EPIC_001_checkout_resume"
+        epic_dir = project_for_promotion / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         story_path = epic_dir / "stories" / "STORY_001" / "story.md"
 
         spec_path = mgr.promote_story(story_path, epic_dir)
@@ -59,7 +59,7 @@ class TestPromotionManager:
 
     def test_promote_story_creates_spec_story(self, project_for_promotion: Path) -> None:
         mgr = PromotionManager(project_for_promotion)
-        epic_dir = project_for_promotion / "work" / "EPIC_001_checkout_resume"
+        epic_dir = project_for_promotion / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         story_path = epic_dir / "stories" / "STORY_001" / "story.md"
 
         spec_path = mgr.promote_story(story_path, epic_dir)
@@ -76,13 +76,13 @@ class TestPromotionManager:
     def test_promote_story_uses_existing_theme(self, project_for_promotion: Path) -> None:
         root = project_for_promotion
         # Pre-create the theme
-        theme_dir = root / "specs" / "THEME_001"
+        theme_dir = root / ".ssdd" / "specs" / "THEME_001"
         theme_dir.mkdir(parents=True)
         (theme_dir / "features").mkdir()
         shutil.copy(FIXTURES_DIR / "sample_theme.md", theme_dir / "theme.md")
 
         mgr = PromotionManager(root)
-        epic_dir = root / "work" / "EPIC_001_checkout_resume"
+        epic_dir = root / ".ssdd" / "work" / "EPIC_001_checkout_resume"
         story_path = epic_dir / "stories" / "STORY_001" / "story.md"
 
         spec_path = mgr.promote_story(story_path, epic_dir)
@@ -90,7 +90,7 @@ class TestPromotionManager:
         assert spec_path.exists()
         # Should still be just one theme
         theme_dirs = [
-            d for d in (root / "specs").iterdir()
+            d for d in (root / ".ssdd" / "specs").iterdir()
             if d.is_dir() and "THEME" in d.name
         ]
         assert len(theme_dirs) == 1
@@ -98,7 +98,7 @@ class TestPromotionManager:
     def test_promote_story_no_theme_raises(self, tmp_project: Path) -> None:
         """Promote fails if no spec_theme is set."""
         # Create epic without spec_theme
-        epic_dir = tmp_project / "work" / "EPIC_001_test"
+        epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_test"
         epic_dir.mkdir(parents=True)
         (epic_dir / "stories" / "STORY_001").mkdir(parents=True)
 
@@ -138,7 +138,7 @@ Test story content.
 
     def test_promote_story_no_feature_raises(self, tmp_project: Path) -> None:
         """Promote fails if no spec_feature is set."""
-        epic_dir = tmp_project / "work" / "EPIC_001_test"
+        epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_test"
         epic_dir.mkdir(parents=True)
         (epic_dir / "stories" / "STORY_001").mkdir(parents=True)
 

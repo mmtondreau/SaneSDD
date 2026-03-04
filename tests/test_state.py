@@ -133,7 +133,7 @@ class TestStateManager:
     def test_list_task_paths(self, project_with_epic: Path) -> None:
         state = StateManager(project_with_epic)
         task_dir = (
-            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
             / "stories" / "STORY_001"
         )
         paths = state.list_task_paths(task_dir)
@@ -144,7 +144,7 @@ class TestStateManager:
     def test_ac_mapping(self, project_with_epic: Path) -> None:
         state = StateManager(project_with_epic)
         task_dir = (
-            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
             / "stories" / "STORY_001"
         )
         paths = state.list_task_paths(task_dir)

@@ -1,4 +1,4 @@
-"""YAML frontmatter state management for SaneSaneSaneSDD artifacts."""
+"""YAML frontmatter state management for SaneSDD artifacts."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 import frontmatter
+
+from ssdd.config import DESIGN_DIR, SPECS_DIR, WORK_DIR
 
 
 class Status(Enum):
@@ -119,15 +121,15 @@ class StateManager:
 
     @property
     def specs_dir(self) -> Path:
-        return self._root / "specs"
+        return self._root / SPECS_DIR
 
     @property
     def work_dir(self) -> Path:
-        return self._root / "work"
+        return self._root / WORK_DIR
 
     @property
     def design_dir(self) -> Path:
-        return self._root / "design"
+        return self._root / DESIGN_DIR
 
     # ── Load / Save ──────────────────────────────────────────────
 

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import frontmatter
 
+from ssdd.config import SPECS_DIR
 from ssdd.state import StateManager
 
 
@@ -80,7 +81,7 @@ class PromotionManager:
         slug = theme_id.lower().replace(" ", "_")
         if not slug.startswith("THEME_"):
             slug = theme_id
-        theme_dir = self._root / "specs" / slug
+        theme_dir = self._root / SPECS_DIR / slug
         theme_dir.mkdir(parents=True, exist_ok=True)
         (theme_dir / "features").mkdir(exist_ok=True)
 

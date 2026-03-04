@@ -24,7 +24,7 @@ This skill displays the current status of epics, stories, and tasks. It is a det
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" status $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" status $ARGUMENTS
 ```
 
 If the command fails (e.g., epic or story not found), report the error to the user and STOP.

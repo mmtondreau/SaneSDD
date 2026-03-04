@@ -6,6 +6,7 @@ import re
 from datetime import date
 from pathlib import Path
 
+from ssdd.config import DESIGN_DIR, INDEX_FILE, SPECS_DIR, WORK_DIR
 from ssdd.state import StateManager, _STORY_GLOB
 
 
@@ -31,14 +32,14 @@ class IndexManager:
         self._append_epics_section(lines)
         self._append_design_section(lines)
 
-        index_path = self._root / "INDEX.md"
+        index_path = self._root / INDEX_FILE
         index_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     def _append_specs_section(self, lines: list[str]) -> None:
         """Append themes/features/stories from the spec channel."""
         lines.append("## Specifications")
         lines.append("")
-        specs_dir = self._root / "specs"
+        specs_dir = self._root / SPECS_DIR
 
         theme_dirs = self._state._list_theme_dirs()
         legacy_feat_dirs = self._legacy_feat_dirs(specs_dir)
@@ -109,7 +110,7 @@ class IndexManager:
         """Append epics from the work channel."""
         lines.append("## Epics")
         lines.append("")
-        work_dir = self._root / "work"
+        work_dir = self._root / WORK_DIR
         epic_dirs = (
             sorted(
                 d for d in work_dir.iterdir()
@@ -145,7 +146,7 @@ class IndexManager:
     def _append_design_section(self, lines: list[str]) -> None:
         lines.append("## Design Documents")
         lines.append("")
-        design_dir = self._root / "design"
+        design_dir = self._root / DESIGN_DIR
         if not design_dir.exists():
             lines.append("_No design documents yet._")
             lines.append("")

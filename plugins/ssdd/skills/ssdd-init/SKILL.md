@@ -1,6 +1,6 @@
 ---
 name: ssdd-init
-description: Initialize a new SaneSDD project with specs/, work/, and design/ directories and INDEX.md. For existing projects, also generates design docs from the codebase.
+description: Initialize a new SaneSDD project with .ssdd/specs/, .ssdd/work/, and .ssdd/design/ directories and INDEX.md. For existing projects, also generates design docs from the codebase.
 disable-model-invocation: true
 user-invocable: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
@@ -14,7 +14,7 @@ argument-hint: "[path]"
 Run the init command to create the SaneSDD directory structure:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" init $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" init $ARGUMENTS
 ```
 
 Report which directories were created and which already existed.
@@ -31,7 +31,7 @@ Ask the user: **"Is this an existing project with code already in it, or a brand
 For existing projects, regenerate INDEX.md immediately so it captures the current state of any existing files:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 ## Step 4: Ask for Existing Documentation
@@ -49,7 +49,7 @@ You are now acting as the **System Architect**. Read the codebase (and any user-
 ### Templates
 
 Read these templates and use them as structural guides — they are the same templates that `/ssdd-design` uses:
-- `${CLAUDE_PLUGIN_ROOT}/skills/ssdd-design/reference/design-template.md` — for design/design.md
+- `${CLAUDE_PLUGIN_ROOT}/skills/ssdd-design/reference/design-template.md` — for .ssdd/design/design.md
 - `${CLAUDE_PLUGIN_ROOT}/skills/ssdd-design/reference/domain-template.md` — for each domain.md within domain directories
 - `${CLAUDE_PLUGIN_ROOT}/skills/ssdd-design/reference/component-design-template.md` — for each COMP_*.md within domain directories
 
@@ -63,22 +63,22 @@ Read these templates and use them as structural guides — they are the same tem
 
 4. **Identify domains and components.** Look for natural bounded contexts: modules, packages, services, or layers (e.g., API, data access, business logic, UI). Group related components into domains. Each distinct area of responsibility becomes a component within a domain.
 
-5. **Generate `design/design.md`** using the design template as the structural guide. Include a Domain Index and Component Index.
+5. **Generate `.ssdd/design/design.md`** using the design template as the structural guide. Include a Domain Index and Component Index.
 
 6. **Generate all `domain.md` files first (breadth-first).** Before writing any component docs, create every domain directory and its `domain.md`. For each domain identified in step 4:
    - Run `ssdd-util next-domain-number` to get the next available number.
-   - Create the directory `design/DOMAIN_NNN_<name>/`.
-   - Generate `design/DOMAIN_NNN_<name>/domain.md` using the domain template as the structural guide.
+   - Create the directory `.ssdd/design/DOMAIN_NNN_<name>/`.
+   - Generate `.ssdd/design/DOMAIN_NNN_<name>/domain.md` using the domain template as the structural guide.
 
    Complete all domain.md files before proceeding. This establishes the full generalized picture of bounded contexts across the system.
 
-7. **Generate component docs within each domain.** Now that all domains are defined, go back through each domain and generate `design/DOMAIN_NNN_<name>/COMP_<name>.md` for each component, using the component design template as the structural guide.
+7. **Generate component docs within each domain.** Now that all domains are defined, go back through each domain and generate `.ssdd/design/DOMAIN_NNN_<name>/COMP_<name>.md` for each component, using the component design template as the structural guide.
 
 Base all content on what you observe in the actual code and any provided documentation — do not speculate or add aspirational content. Document what exists.
 
 8. **Regenerate INDEX.md** to capture the newly created design files:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 ## Final Message
@@ -92,15 +92,15 @@ If design documents were generated for an existing project, also display a **Fil
 > **Files to review:**
 >
 > System architecture:
-> - `design/design.md`
+> - `.ssdd/design/design.md`
 >
 > Domains:
-> - `design/DOMAIN_001_<name>/domain.md`
-> - `design/DOMAIN_002_<name>/domain.md`
+> - `.ssdd/design/DOMAIN_001_<name>/domain.md`
+> - `.ssdd/design/DOMAIN_002_<name>/domain.md`
 > - _(list all)_
 >
 > Components:
-> - `design/DOMAIN_001_<name>/COMP_<name>.md`
+> - `.ssdd/design/DOMAIN_001_<name>/COMP_<name>.md`
 > - _(list all)_
 
 List the actual file paths that were generated — do not use glob patterns. Then tell the user:

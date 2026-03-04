@@ -14,17 +14,17 @@ updated: "YYYY-MM-DD"
 ## Components
 
 <!-- List each component involved in this epic. For each component, provide:
-     - Name (must match the COMP_<name>.md file in design/DOMAIN_*/)
+     - Name (must match the COMP_<name>.md file in .ssdd/design/DOMAIN_*/)
      - Brief description (1-2 sentences)
      - Whether it's new or existing (and what changes if existing)
 
-     Every component listed here MUST have a corresponding design/DOMAIN_*/COMP_<name>.md
+     Every component listed here MUST have a corresponding .ssdd/design/DOMAIN_*/COMP_<name>.md
      with full detail. -->
 
 ### <ComponentName>
 - **Status**: New | Modified
 - **Purpose**: <1-2 sentence description>
-- **Design doc**: `design/DOMAIN_<NNN>_<domain>/COMP_<name>.md`
+- **Design doc**: `.ssdd/design/DOMAIN_<NNN>_<domain>/COMP_<name>.md`
 
 ## Data Flow
 

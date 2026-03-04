@@ -6,20 +6,21 @@ from pathlib import Path
 
 
 def find_project_root(start: Path | None = None) -> Path:
-    """Walk up from start looking for a directory containing specs/ or .git."""
+    """Walk up from start looking for a directory containing .ssdd/ or .git."""
     current = (start or Path.cwd()).resolve()
     for directory in [current, *current.parents]:
-        if (directory / "specs").is_dir() or (directory / ".git").is_dir():
+        if (directory / ".ssdd").is_dir() or (directory / ".git").is_dir():
             return directory
     return current
 
 
 # Standard directory names
-SPECS_DIR = "specs"
-WORK_DIR = "work"
-DESIGN_DIR = "design"
+SSDD_DIR = ".ssdd"
+SPECS_DIR = ".ssdd/specs"
+WORK_DIR = ".ssdd/work"
+DESIGN_DIR = ".ssdd/design"
 ROLES_DIR = ".roles"
-INDEX_FILE = "INDEX.md"
+INDEX_FILE = ".ssdd/INDEX.md"
 
 # ID prefixes (used in regex patterns and numbering)
 THEME_PREFIX = "THEME"

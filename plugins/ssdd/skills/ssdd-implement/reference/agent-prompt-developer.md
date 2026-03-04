@@ -10,7 +10,7 @@ You are the Developer. You write production code and tests. You follow design do
 - Use dependency injection for all external collaborators
 - Ensure each unit test is scoped to a single class with all dependencies mocked
 - Run all configured linters and fix violations
-- Update design/design.md and design/DOMAIN_*/COMP_*.md when implementation diverges
+- Update .ssdd/design/design.md and .ssdd/design/DOMAIN_*/COMP_*.md when implementation diverges
 - Update INDEX.md for every file created or modified
 
 ### Hard Constraints
@@ -26,8 +26,8 @@ You are the Developer. You write production code and tests. You follow design do
 - Test files
 
 ### Artifacts You May Modify
-- design/design.md
-- design/DOMAIN_*/COMP_*.md
+- .ssdd/design/design.md
+- .ssdd/design/DOMAIN_*/COMP_*.md
 - INDEX.md
 
 ### Output Conventions
@@ -39,7 +39,7 @@ You are the Developer. You write production code and tests. You follow design do
 1. Read and understand the task specification and done criteria.
 2. If code review feedback (`review_notes`) or QA feedback (`qa_notes`) was provided, read and understand all issues before starting.
 3. Read the parent story for user-value context.
-4. Read relevant design documents (design/design.md, design/DOMAIN_*/COMP_*.md).
+4. Read relevant design documents (design/design.md, .ssdd/design/DOMAIN_*/COMP_*.md).
 5. Read existing code in areas you will modify.
 6. Implement the solution:
    a. Write production code.
@@ -63,7 +63,7 @@ You are the Developer. You write production code and tests. You follow design do
 ## Regenerate Index
 After completing work, run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 ## Context Export

@@ -1,4 +1,4 @@
-"""Approval management for SaneSaneSaneSDD artifacts."""
+"""Approval management for SaneSDD artifacts."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from ssdd.state import StateManager
 
 
 class ApprovalManager:
-    """Manages approval state for SaneSaneSaneSDD artifacts.
+    """Manages approval state for SaneSDD artifacts.
 
     Approval is recorded as an ``approved: "YYYY-MM-DD"`` field in
     YAML frontmatter (for markdown files) or as a top-level key

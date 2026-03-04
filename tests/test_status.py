@@ -137,7 +137,7 @@ class TestStatusWithDoneTask:
         patch_root(project_with_epic)
         # Mark TASK_001 in STORY_001 as DONE
         task_file = (
-            project_with_epic / "work" / "EPIC_001_checkout_resume"
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
             / "stories" / "STORY_001" / "TASK_001_create_cart_session_table.md"
         )
         content = task_file.read_text()

@@ -13,17 +13,19 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 @pytest.fixture
 def tmp_project(tmp_path: Path) -> Path:
     """Create a temporary project directory with standard structure."""
-    specs = tmp_path / "specs"
+    ssdd = tmp_path / ".ssdd"
+    ssdd.mkdir()
+    specs = ssdd / "specs"
     specs.mkdir()
-    (tmp_path / "work").mkdir()
-    (tmp_path / "design").mkdir()
+    (ssdd / "work").mkdir()
+    (ssdd / "design").mkdir()
     return tmp_path
 
 
 @pytest.fixture
 def project_with_feature(tmp_project: Path) -> Path:
     """Project with a sample feature."""
-    feat_dir = tmp_project / "specs" / "FEAT_001_checkout_resume"
+    feat_dir = tmp_project / ".ssdd" / "specs" / "FEAT_001_checkout_resume"
     feat_dir.mkdir(parents=True)
     (feat_dir / "stories").mkdir()
     shutil.copy(FIXTURES_DIR / "sample_feature.md", feat_dir / "feature.md")
@@ -33,7 +35,7 @@ def project_with_feature(tmp_project: Path) -> Path:
 @pytest.fixture
 def project_with_stories(project_with_feature: Path) -> Path:
     """Project with a feature and stories."""
-    stories_dir = project_with_feature / "specs" / "FEAT_001_checkout_resume" / "stories"
+    stories_dir = project_with_feature / ".ssdd" / "specs" / "FEAT_001_checkout_resume" / "stories"
     shutil.copy(FIXTURES_DIR / "sample_story.md", stories_dir / "STORY_001_save_cart.md")
     shutil.copy(FIXTURES_DIR / "sample_story_002.md", stories_dir / "STORY_002_guest_checkout.md")
     return project_with_feature
@@ -43,7 +45,7 @@ def project_with_stories(project_with_feature: Path) -> Path:
 def project_with_epic(project_with_stories: Path) -> Path:
     """Project with a feature, stories, and an epic with tasks."""
     root = project_with_stories
-    epic_dir = root / "work" / "EPIC_001_checkout_resume"
+    epic_dir = root / ".ssdd" / "work" / "EPIC_001_checkout_resume"
     epic_dir.mkdir(parents=True)
     (epic_dir / "stories").mkdir()
     shutil.copy(FIXTURES_DIR / "sample_epic.md", epic_dir / "epic.md")

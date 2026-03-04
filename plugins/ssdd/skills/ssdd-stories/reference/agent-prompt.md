@@ -18,8 +18,8 @@ Decompose the feature into user stories with acceptance criteria.
 
 ## Context Gathering
 Before generating stories, read the following files:
-1. The feature spec: find it via `find-feature` (may be under `specs/THEME_*/features/` or `specs/`)
-2. Global design docs: glob for `design/design.md` and `design/DOMAIN_*/COMP_*.md`
+1. The feature spec: find it via `find-feature` (may be under `.ssdd/specs/THEME_*/features/` or `.ssdd/specs/`)
+2. Global design docs: glob for `.ssdd/design/design.md` and `.ssdd/design/DOMAIN_*/COMP_*.md`
 3. The epic design: `<epic_dir>/high_level_design.md`
 4. Any existing work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
 

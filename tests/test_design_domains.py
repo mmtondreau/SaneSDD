@@ -17,7 +17,7 @@ class TestDomainOperations:
 
     def test_list_domains(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
-        domain_dir = tmp_project / "design" / "DOMAIN_001_commerce"
+        domain_dir = tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce"
         domain_dir.mkdir(parents=True)
         shutil.copy(FIXTURES_DIR / "sample_domain.md", domain_dir / "domain.md")
 
@@ -27,7 +27,7 @@ class TestDomainOperations:
 
     def test_find_domain_by_substring(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
-        (tmp_project / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
 
         result = mgr.find_domain("commerce")
         assert result is not None
@@ -43,13 +43,13 @@ class TestDomainOperations:
 
     def test_next_domain_number_existing(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
-        (tmp_project / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
-        (tmp_project / "design" / "DOMAIN_002_auth").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce").mkdir(parents=True)
+        (tmp_project / ".ssdd" / "design" / "DOMAIN_002_auth").mkdir(parents=True)
         assert mgr.next_domain_number() == 3
 
     def test_list_components_in_domain(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
-        domain_dir = tmp_project / "design" / "DOMAIN_001_commerce"
+        domain_dir = tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce"
         domain_dir.mkdir(parents=True)
         (domain_dir / "COMP_cart.md").write_text("# Cart Component\n")
         (domain_dir / "COMP_order.md").write_text("# Order Component\n")
@@ -62,12 +62,12 @@ class TestDomainOperations:
     def test_list_components_all(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
         # Component inside a domain
-        domain_dir = tmp_project / "design" / "DOMAIN_001_commerce"
+        domain_dir = tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce"
         domain_dir.mkdir(parents=True)
         (domain_dir / "COMP_cart.md").write_text("# Cart\n")
 
         # Legacy top-level component
-        (tmp_project / "design" / "COMP_legacy.md").write_text("# Legacy\n")
+        (tmp_project / ".ssdd" / "design" / "COMP_legacy.md").write_text("# Legacy\n")
 
         comps = mgr.list_components()
         assert len(comps) == 2
@@ -76,9 +76,9 @@ class TestDomainOperations:
 
     def test_get_design_summary_with_domains(self, tmp_project: Path) -> None:
         mgr = DesignManager(tmp_project)
-        (tmp_project / "design" / "design.md").write_text("# System Design\n")
+        (tmp_project / ".ssdd" / "design" / "design.md").write_text("# System Design\n")
 
-        domain_dir = tmp_project / "design" / "DOMAIN_001_commerce"
+        domain_dir = tmp_project / ".ssdd" / "design" / "DOMAIN_001_commerce"
         domain_dir.mkdir(parents=True)
         (domain_dir / "domain.md").write_text("# Commerce Domain\n")
         (domain_dir / "COMP_cart.md").write_text("# Cart\n")

@@ -1,14 +1,14 @@
-# SaneSaneSDD (Sane Spec Driven Development) — Project Instructions
+# SaneSDD (Sane Spec Driven Development) — Project Instructions
 
 These instructions apply to EVERY role and EVERY phase.
 
 ## Utility CLI
 
 SaneSDD includes `ssdd-util`, a Python CLI for deterministic state operations.
-Skills invoke it via `"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh"`.
+Skills invoke it via `"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh"`.
 
 Available commands:
-- `ssdd-util init [--path DIR]` — initialize specs/, work/, design/ directories and INDEX.md
+- `ssdd-util init [--path DIR]` — initialize .ssdd/ directory structure and INDEX.md
 - `ssdd-util next-theme-number` — prints the next THEME_NNN number
 - `ssdd-util next-feature-number` — prints the next FEAT_NNN number
 - `ssdd-util next-feature-number-in-theme <theme_dir>` — prints next FEAT_NNN number within a theme
@@ -17,11 +17,11 @@ Available commands:
 - `ssdd-util next-epic-number` — prints the next EPIC_NNN number
 - `ssdd-util next-domain-number` — prints the next DOMAIN_NNN number
 - `ssdd-util find-theme <name>` — prints the theme directory path
-- `ssdd-util find-feature <name>` — prints the feature directory path (searches under specs/THEME_*/features/)
+- `ssdd-util find-feature <name>` — prints the feature directory path (searches under .ssdd/specs/THEME_*/features/)
 - `ssdd-util find-story <name> [--channel spec|work|both]` — prints story location as JSON (default: both channels)
 - `ssdd-util find-epic <name>` — prints the epic directory path
 - `ssdd-util find-domain <name>` — prints the domain directory path
-- `ssdd-util create-epic <epic_slug>` — creates and prints new epic path under work/
+- `ssdd-util create-epic <epic_slug>` — creates and prints new epic path under .ssdd/work/
 - `ssdd-util regenerate-index` — regenerates INDEX.md
 - `ssdd-util plan-json <epic_name>` — outputs development plan as JSON
 - `ssdd-util promote-story <work_story_path> --epic <epic_dir>` — promotes a completed work story to the spec channel
@@ -54,25 +54,25 @@ Available commands:
 
 ```
 # Spec channel — living documentation (current system state)
-specs/THEME_NNN_slug/theme.md                              Theme grouping
-specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md     Feature specification
-specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md  Spec story (promoted from work)
+.ssdd/specs/THEME_NNN_slug/theme.md                              Theme grouping
+.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md     Feature specification
+.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md  Spec story (promoted from work)
 
 # Work channel — execution (planned changes)
-work/EPIC_NNN_slug/epic.md                                 Epic definition
-work/EPIC_NNN_slug/high_level_design.md                    Epic-level design
-work/EPIC_NNN_slug/development_plan.yaml                   Development plan
-work/EPIC_NNN_slug/stories/STORY_NNN/story.md              Work story (with ACs)
-work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md      Task
-work/EPIC_NNN_slug/agent/<role>/context.md                 Agent context persistence
+.ssdd/work/EPIC_NNN_slug/epic.md                                 Epic definition
+.ssdd/work/EPIC_NNN_slug/high_level_design.md                    Epic-level design
+.ssdd/work/EPIC_NNN_slug/development_plan.yaml                   Development plan
+.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md              Work story (with ACs)
+.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md      Task
+.ssdd/work/EPIC_NNN_slug/agent/<role>/context.md                 Agent context persistence
 
 # Design channel — domain-driven architecture
-design/design.md                                           Top-level system architecture
-design/DOMAIN_NNN_slug/domain.md                           Bounded context description
-design/DOMAIN_NNN_slug/COMP_slug.md                        Component within domain
+.ssdd/design/design.md                                           Top-level system architecture
+.ssdd/design/DOMAIN_NNN_slug/domain.md                           Bounded context description
+.ssdd/design/DOMAIN_NNN_slug/COMP_slug.md                        Component within domain
 
 # Other
-INDEX.md                                                   File index (auto-generated)
+.ssdd/INDEX.md                                                   File index (auto-generated)
 .roles/*.md                                                Team-specific role overrides
 ```
 

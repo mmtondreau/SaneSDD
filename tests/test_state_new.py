@@ -15,7 +15,7 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 @pytest.fixture
 def project_with_theme(tmp_project: Path) -> Path:
     """Project with a theme and feature in the new hierarchy."""
-    theme_dir = tmp_project / "specs" / "THEME_001_ecommerce"
+    theme_dir = tmp_project / ".ssdd" / "specs" / "THEME_001_ecommerce"
     theme_dir.mkdir(parents=True)
     shutil.copy(FIXTURES_DIR / "sample_theme.md", theme_dir / "theme.md")
 
@@ -30,7 +30,7 @@ def project_with_theme(tmp_project: Path) -> Path:
 @pytest.fixture
 def project_with_epic(tmp_project: Path) -> Path:
     """Project with an epic and work stories."""
-    epic_dir = tmp_project / "work" / "EPIC_001_checkout_resume"
+    epic_dir = tmp_project / ".ssdd" / "work" / "EPIC_001_checkout_resume"
     epic_dir.mkdir(parents=True)
     (epic_dir / "stories").mkdir()
     shutil.copy(FIXTURES_DIR / "sample_epic.md", epic_dir / "epic.md")
@@ -75,7 +75,7 @@ class TestThemeOperations:
 
     def test_next_feature_number_in_empty_theme(self, tmp_project: Path) -> None:
         state = StateManager(tmp_project)
-        theme_dir = tmp_project / "specs" / "THEME_001_new"
+        theme_dir = tmp_project / ".ssdd" / "specs" / "THEME_001_new"
         theme_dir.mkdir(parents=True)
         (theme_dir / "features").mkdir()
         assert state.next_feature_number_in_theme(theme_dir) == 1
@@ -94,7 +94,7 @@ class TestThemeOperations:
     def test_list_theme_dirs(self, project_with_theme: Path) -> None:
         state = StateManager(project_with_theme)
         # Add a second theme
-        (project_with_theme / "specs" / "THEME_002_auth").mkdir()
+        (project_with_theme / ".ssdd" / "specs" / "THEME_002_auth").mkdir()
         themes = state._list_theme_dirs()
         assert len(themes) == 2
         assert themes[0].name == "THEME_001_ecommerce"

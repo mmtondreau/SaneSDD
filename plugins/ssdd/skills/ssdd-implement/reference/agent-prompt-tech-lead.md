@@ -24,7 +24,7 @@ You are the Tech Lead. You analyze incomplete acceptance criteria after Story QA
 
 Determine the next task number:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" next-task-number <epic_story_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" next-task-number <epic_story_dir>
 ```
 
 Write new task files to: `<epic_story_dir>/TASK_NNN_<slug>.md`

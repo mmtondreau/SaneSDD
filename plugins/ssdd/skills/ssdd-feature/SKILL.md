@@ -15,14 +15,14 @@ You are the orchestrator for the Product Manager (Feature) phase. You will gathe
 
 Before proceeding, verify the required inputs exist:
 
-1. Check that the `specs/` directory exists by globbing for it.
+1. Check that the `.ssdd/specs/` directory exists by globbing for it.
 If it does not exist, STOP and tell the user: "Project not initialized. Run `/ssdd-init` first to create the SaneSDD directory structure."
 
 ## Setup
 
 Determine the next feature ID:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" next-feature-number
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" next-feature-number
 ```
 
 This will output a number (e.g., `1`). Use it to form the ID `FEAT_<NNN>` where NNN is zero-padded to 3 digits (e.g., `FEAT_001`). Save this as `<feature_id>`.
@@ -31,21 +31,21 @@ This will output a number (e.g., `1`). Use it to form the ID `FEAT_<NNN>` where 
 
 1. Check if this is an iteration on an existing feature. If the user's arguments reference an existing feature:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" find-feature $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" find-feature $ARGUMENTS
 ```
 If this succeeds, save the output as `<feature_dir>` and read prior context:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" read-context product_manager --feature <feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context product_manager --feature <feature_dir>
 ```
 Save any output as `PRIOR_CONTEXT`.
 
 If find-feature fails, this is a new feature — there is no prior context.
 
-2. For a new feature, the context export path will be determined after the feature directory is created. Pass the feature ID to the sub-agent so it can compute the path: `specs/FEAT_<NNN>_<slug>/agent/product_manager/context.md`.
+2. For a new feature, the context export path will be determined after the feature directory is created. Pass the feature ID to the sub-agent so it can compute the path: `.ssdd/specs/FEAT_<NNN>_<slug>/agent/product_manager/context.md`.
 
 For an existing feature, get the context export path:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" context-path product_manager --feature <feature_dir>
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" context-path product_manager --feature <feature_dir>
 ```
 Save the output as `<context_export_path>`.
 
@@ -81,7 +81,7 @@ Wait for the sub-agent to complete.
 
 1. Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/sssdd-util.sh" regenerate-index
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
 2. Report the sub-agent's results to the user.
@@ -89,8 +89,8 @@ Wait for the sub-agent to complete.
 3. Display a **Files to review** section listing every file that was created or modified. Use this format:
 
 > **Files to review:**
-> - `specs/THEME_NNN_slug/theme.md`
-> - `specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`
+> - `.ssdd/specs/THEME_NNN_slug/theme.md`
+> - `.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`
 
 List the actual file paths that were generated — do not use glob patterns.
 
