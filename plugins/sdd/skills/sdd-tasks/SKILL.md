@@ -85,6 +85,19 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Tell the user:
+3. Display a **Files to review** section listing every file that was created or modified, grouped by story. Use this format:
+
+> **Files to review:**
+>
+> STORY_NNN tasks:
+> - `work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
+> - _(list all tasks in this story)_
+>
+> STORY_NNN tasks:
+> - _(repeat for each story)_
+
+List the actual file paths that were generated — do not use glob patterns.
+
+4. Tell the user:
 
 > **Next step:** Run `/sdd-plan <feature-name>` to create the execution plan.

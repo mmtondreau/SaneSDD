@@ -85,6 +85,13 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Tell the user:
+3. Display a **Files to review** section listing every file that was created or modified. Use this format:
+
+> **Files to review:**
+> - `work/EPIC_NNN_slug/development_plan.yaml`
+
+List the actual file path that was generated.
+
+4. Tell the user:
 
 > **Next step:** Run `/sdd-implement <story-id>` to start implementing a story. Stories should be implemented in plan order. Use the development plan to identify the first story to implement.

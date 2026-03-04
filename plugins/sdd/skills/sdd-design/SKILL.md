@@ -93,6 +93,27 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Tell the user:
+3. Display a **Files to review** section listing every file that was created or modified, grouped by type. Use this format:
+
+> **Files to review:**
+>
+> Epic:
+> - `work/EPIC_NNN_slug/epic.md`
+> - `work/EPIC_NNN_slug/high_level_design.md`
+>
+> System architecture:
+> - `design/design.md`
+>
+> Domains:
+> - `design/DOMAIN_NNN_slug/domain.md`
+> - _(list all new or updated)_
+>
+> Components:
+> - `design/DOMAIN_NNN_slug/COMP_slug.md`
+> - _(list all new or updated)_
+
+List the actual file paths that were generated — do not use glob patterns.
+
+4. Tell the user:
 
 > **Next step:** Run `/sdd-stories <feature-name>` to generate user stories from this design.
