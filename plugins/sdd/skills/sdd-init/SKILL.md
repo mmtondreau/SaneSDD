@@ -50,6 +50,7 @@ You are now acting as the **System Architect**. Read the codebase (and any user-
 
 Read these templates and use them as structural guides — they are the same templates that `/sdd-design` uses:
 - `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/design-template.md` — for design/design.md
+- `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/domain-template.md` — for each domain.md within domain directories
 - `${CLAUDE_PLUGIN_ROOT}/skills/sdd-design/reference/component-design-template.md` — for each COMP_*.md within domain directories
 
 ### Process
@@ -64,11 +65,18 @@ Read these templates and use them as structural guides — they are the same tem
 
 5. **Generate `design/design.md`** using the design template as the structural guide. Include a Domain Index and Component Index.
 
-6. **Generate domain directories and component docs.** For each domain, create `design/DOMAIN_NNN_<name>/` and generate `design/DOMAIN_NNN_<name>/COMP_<name>.md` for each component, using the component design template as the structural guide. Use `sdd-util next-domain-number` to determine the next available domain number.
+6. **Generate all `domain.md` files first (breadth-first).** Before writing any component docs, create every domain directory and its `domain.md`. For each domain identified in step 4:
+   - Run `sdd-util next-domain-number` to get the next available number.
+   - Create the directory `design/DOMAIN_NNN_<name>/`.
+   - Generate `design/DOMAIN_NNN_<name>/domain.md` using the domain template as the structural guide.
+
+   Complete all domain.md files before proceeding. This establishes the full generalized picture of bounded contexts across the system.
+
+7. **Generate component docs within each domain.** Now that all domains are defined, go back through each domain and generate `design/DOMAIN_NNN_<name>/COMP_<name>.md` for each component, using the component design template as the structural guide.
 
 Base all content on what you observe in the actual code and any provided documentation — do not speculate or add aspirational content. Document what exists.
 
-7. **Regenerate INDEX.md** to capture the newly created design files:
+8. **Regenerate INDEX.md** to capture the newly created design files:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/sdd-util.sh" regenerate-index
 ```
