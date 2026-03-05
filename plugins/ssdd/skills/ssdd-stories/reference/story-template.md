@@ -5,6 +5,8 @@ status: "TODO"
 epic: "EPIC_NNN"
 spec_feature: "FEAT_NNN"
 depends_on: []
+related_stories: []
+related_components: []
 acceptance_criteria:
   - id: "AC_001"
     description: "Given <precondition>, when <action>, then <expected result>"

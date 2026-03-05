@@ -39,7 +39,7 @@ You are the Developer. You write production code and tests. You follow design do
 1. Read and understand the task specification and done criteria.
 2. If code review feedback (`review_notes`) or QA feedback (`qa_notes`) was provided, read and understand all issues before starting.
 3. Read the parent story for user-value context.
-4. Read relevant design documents (design/design.md, .ssdd/design/DOMAIN_*/COMP_*.md).
+4. Read relevant design documents: first read `design/design.md` and all `.ssdd/design/DOMAIN_*/domain.md` files to identify relevant domains, then read only the `COMP_*.md` files within those relevant domains — do NOT load all component files.
 5. Read existing code in areas you will modify.
 6. Implement the solution:
    a. Write production code.

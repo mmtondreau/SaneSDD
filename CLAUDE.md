@@ -144,6 +144,8 @@ status: TODO | IN_PROGRESS | DONE | BLOCKED
 epic: "EPIC_NNN"
 spec_feature: "FEAT_NNN"     # optional: which spec feature to promote to
 depends_on: []
+related_stories: []           # STORY_NNN IDs with semantic (non-dependency) relationships
+related_components: []        # Component names this story touches (bidirectional with component stories field)
 acceptance_criteria:
   - id: "AC_NNN"
     description: "<testable criterion>"
@@ -178,10 +180,25 @@ updated: "YYYY-MM-DD"
 ---
 ```
 
+### Component frontmatter
+```yaml
+---
+component: "<ComponentName>"
+depends_on: []                # Structural dependencies on other components
+related_components: []        # Semantically related components (non-dependency relationships)
+stories: []                   # STORY_NNN IDs this component implements
+updated: "YYYY-MM-DD"
+---
+```
+
 ## Cross-Referencing
 
 - Always reference artifacts by ID, never by title.
 - Titles may change. IDs must not.
+- **Bidirectional linking is required.** When a story or component references a related artifact, the related artifact MUST be updated to reference back. Specifically:
+  - When a story adds a `related_stories` entry, the referenced story's `related_stories` MUST be updated to include the referencing story.
+  - When a story adds a `related_components` entry, the referenced component's `stories` field MUST be updated to include the story ID (and vice versa).
+  - When a component adds a `related_components` entry, the referenced component's `related_components` MUST be updated to include the referencing component.
 
 ## Error Handling
 

@@ -1,6 +1,7 @@
 ---
 component: "<ComponentName>"
 depends_on: []
+related_components: []
 stories: []
 updated: "YYYY-MM-DD"
 ---

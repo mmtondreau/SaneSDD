@@ -19,7 +19,7 @@ Produce a sequenced development plan (development_plan.yaml) that orders stories
 Read the following files:
 1. The feature spec: find it via `find-feature` (may be under `.ssdd/specs/THEME_*/features/` or `.ssdd/specs/`)
 2. All work stories: glob for `<epic_dir>/stories/STORY_*/story.md`
-3. Global design docs: `.ssdd/design/design.md` and `.ssdd/design/DOMAIN_*/COMP_*.md`
+3. Global design docs: `.ssdd/design/design.md` and all `.ssdd/design/DOMAIN_*/domain.md` files. Then, based on which domains are relevant to the stories and tasks, read only the `COMP_*.md` files within those domains — do NOT load all component files upfront.
 4. The epic design: `<epic_dir>/high_level_design.md`
 5. All tasks: glob for `<epic_dir>/stories/*/TASK_*.md`
 

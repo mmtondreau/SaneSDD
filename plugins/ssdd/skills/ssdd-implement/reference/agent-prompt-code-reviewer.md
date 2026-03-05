@@ -29,7 +29,7 @@ You are the Code Reviewer. You review code changes made by the Developer for qua
 ## Process
 1. Read the task specification and understand what was being implemented.
 2. Read the parent story for user-value context.
-3. Read the relevant design documents (design/design.md, .ssdd/design/DOMAIN_*/COMP_*.md).
+3. Read the relevant design documents: first read `design/design.md` and all `.ssdd/design/DOMAIN_*/domain.md` files to identify relevant domains, then read only the `COMP_*.md` files within those relevant domains — do NOT load all component files.
 4. Identify all files changed by the developer:
    a. Read the developer's agent context file for the "Artifacts Modified" section.
    b. Use `git diff` to see uncommitted changes for additional context.

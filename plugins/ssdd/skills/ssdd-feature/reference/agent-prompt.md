@@ -21,7 +21,8 @@ You are the Product Manager. You own product requirements. You translate busines
 
 ### Artifacts You May Read
 - .ssdd/design/design.md
-- .ssdd/design/DOMAIN_*/COMP_*.md
+- .ssdd/design/DOMAIN_*/domain.md (read these first to identify relevant domains)
+- .ssdd/design/DOMAIN_*/COMP_*.md (only load components from relevant domains)
 
 ## Objective
 Collaborate with the user to produce a complete feature specification document.
