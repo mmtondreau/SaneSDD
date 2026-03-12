@@ -35,7 +35,7 @@ Parse the JSON output. If `approved` is `false`, display the list of unapproved 
 > **Warning:** The following artifacts from the previous step have not been approved:
 > - _(list each path from the `unapproved` array)_
 >
-> Run `/ssdd-approve feature <name>` to approve, or confirm you want to continue without approval.
+> Approve each file by running `/ssdd-approve <file-path>` for each unapproved file listed above, or confirm you want to continue without approval.
 > **Continue without approval?**
 
 If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
@@ -135,4 +135,4 @@ List the actual file paths that were generated — do not use glob patterns.
 
 4. Tell the user:
 
-> **Next step:** Review the files above, then run `/ssdd-approve design <epic-name>` to approve. Then run `/ssdd-stories <feature-name>` to generate user stories.
+> **Next step:** Review the files above, then approve them by running `/ssdd-approve <file-path>` for each file (e.g., `/ssdd-approve .ssdd/work/EPIC_NNN_slug/high_level_design.md`). Then run `/ssdd-stories <feature-name>` to generate user stories.

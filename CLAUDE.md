@@ -28,6 +28,9 @@ Available commands:
 - `ssdd-util context-path <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file path for a role
 - `ssdd-util read-context <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file contents (empty if not found)
 - `ssdd-util status [name] [--type epic|story]` — shows status of an epic, story, or all epics (auto-detects type if omitted)
+- `ssdd-util approve-file <file-path> [<file-path> ...]` — approves individual files by path; sets `approved` frontmatter field to today's date; outputs JSON
+- `ssdd-util approve <step> <name>` — (legacy) marks all artifacts for a step as approved; outputs JSON
+- `ssdd-util check-approval <step> <name>` — checks if prior step's artifacts are approved; outputs JSON
 
 ## Sub-Agent Architecture
 
@@ -105,6 +108,7 @@ id: "FEAT_NNN"
 title: "<title>"
 status: TODO | IN_PROGRESS | DONE
 theme: "THEME_NNN"
+approved: ""                         # set to "YYYY-MM-DD" by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -135,6 +139,16 @@ updated: "YYYY-MM-DD"
 ---
 ```
 
+### High-level design frontmatter
+```yaml
+---
+epic: "EPIC_NNN"
+title: "<Epic Title>"
+approved: ""                         # set to "YYYY-MM-DD" by /ssdd-approve
+updated: "YYYY-MM-DD"
+---
+```
+
 ### Work story frontmatter
 ```yaml
 ---
@@ -150,6 +164,7 @@ acceptance_criteria:
   - id: "AC_NNN"
     description: "<testable criterion>"
     status: "TODO"
+approved: ""                         # set to "YYYY-MM-DD" by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---
@@ -166,6 +181,7 @@ depends_on: []
 ac_mapping: ["AC_NNN"]
 code_review: "APPROVED | CHANGES_REQUESTED"  # optional, set by code reviewer
 review_notes: "<feedback>"                     # optional, set by code reviewer when requesting changes
+approved: ""                         # set to "YYYY-MM-DD" by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

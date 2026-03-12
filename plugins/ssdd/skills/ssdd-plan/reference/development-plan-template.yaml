@@ -6,6 +6,7 @@
 
 epic: "EPIC_NNN_slug"
 generated_at: "YYYY-MM-DDTHH:MM:SS"
+approved: ""
 
 stories:
   - story_id: "STORY_001"

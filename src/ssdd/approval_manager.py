@@ -41,6 +41,56 @@ class ApprovalManager:
         self._state.save(doc)
         return {"path": str(path), "approved": doc.metadata["approved"]}
 
+    def _approve_yaml(self, path: Path) -> dict[str, Any]:
+        """Set the ``approved`` field on a YAML file."""
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        data["approved"] = self._stamp()
+        path.write_text(
+            yaml.dump(data, default_flow_style=False, sort_keys=False),
+            encoding="utf-8",
+        )
+        return {"path": str(path), "approved": data["approved"]}
+
+    def approve_file(self, file_path: str) -> dict[str, Any]:
+        """Approve a single file by path.
+
+        Accepts absolute paths or paths relative to the project root.
+        Works with both markdown files (frontmatter) and YAML files.
+        """
+        path = Path(file_path)
+        if not path.is_absolute():
+            path = self._root / path
+        path = path.resolve()
+
+        if not path.exists():
+            return {"error": f"File not found: {file_path}"}
+
+        if path.suffix == ".yaml" or path.suffix == ".yml":
+            result = self._approve_yaml(path)
+        elif path.suffix == ".md":
+            result = self._approve_md(path)
+        else:
+            return {"error": f"Unsupported file type: {path.suffix}"}
+
+        return {"approved": [result]}
+
+    def approve_files(self, file_paths: list[str]) -> dict[str, Any]:
+        """Approve multiple files by path."""
+        results: list[dict[str, Any]] = []
+        errors: list[str] = []
+        for fp in file_paths:
+            result = self.approve_file(fp)
+            if "error" in result:
+                errors.append(result["error"])
+            else:
+                results.extend(result["approved"])
+        if errors and not results:
+            return {"error": "; ".join(errors)}
+        output: dict[str, Any] = {"approved": results}
+        if errors:
+            output["errors"] = errors
+        return output
+
     def approve_feature(self, name: str) -> dict[str, Any]:
         """Approve a feature spec."""
         feat_dir = self._state.find_feature_dir(name)
@@ -108,16 +158,8 @@ class ApprovalManager:
         plan_path = epic_dir / "development_plan.yaml"
         if not plan_path.exists():
             return {"error": f"development_plan.yaml not found in {epic_dir}"}
-        data = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
-        data["approved"] = self._stamp()
-        plan_path.write_text(
-            yaml.dump(data, default_flow_style=False, sort_keys=False),
-            encoding="utf-8",
-        )
-        return {
-            "step": "plan",
-            "approved": [{"path": str(plan_path), "approved": data["approved"]}],
-        }
+        result = self._approve_yaml(plan_path)
+        return {"step": "plan", "approved": [result]}
 
     def approve(self, step: str, name: str) -> dict[str, Any]:
         """Dispatch to the correct approve method by step name."""

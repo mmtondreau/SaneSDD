@@ -1,6 +1,7 @@
 ---
 epic: "EPIC_NNN"
 title: "<Epic Title>"
+approved: ""
 updated: "YYYY-MM-DD"
 ---
 

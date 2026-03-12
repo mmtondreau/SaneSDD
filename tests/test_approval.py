@@ -134,6 +134,83 @@ class TestApprovePlan:
 # ── Check approval tests ─────────────────────────────────────────
 
 
+class TestApproveFile:
+    def test_approve_md_file(self, project_with_feature: Path) -> None:
+        mgr = ApprovalManager(project_with_feature)
+        feat_path = (
+            project_with_feature / ".ssdd" / "specs"
+            / "FEAT_001_checkout_resume" / "feature.md"
+        )
+        result = mgr.approve_file(str(feat_path))
+        assert "error" not in result
+        assert len(result["approved"]) == 1
+        post = frontmatter.load(str(feat_path))
+        assert post.metadata["approved"]
+
+    def test_approve_relative_path(self, project_with_feature: Path) -> None:
+        mgr = ApprovalManager(project_with_feature)
+        result = mgr.approve_file(
+            ".ssdd/specs/FEAT_001_checkout_resume/feature.md"
+        )
+        assert "error" not in result
+        assert len(result["approved"]) == 1
+
+    def test_approve_yaml_file(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        plan_path = (
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "development_plan.yaml"
+        )
+        result = mgr.approve_file(str(plan_path))
+        assert "error" not in result
+        assert len(result["approved"]) == 1
+        data = yaml.safe_load(plan_path.read_text())
+        assert data["approved"]
+
+    def test_approve_not_found(self, tmp_project: Path) -> None:
+        mgr = ApprovalManager(tmp_project)
+        result = mgr.approve_file("/nonexistent/file.md")
+        assert "error" in result
+
+    def test_approve_unsupported_type(self, tmp_project: Path) -> None:
+        mgr = ApprovalManager(tmp_project)
+        txt_file = tmp_project / "test.txt"
+        txt_file.write_text("hello")
+        result = mgr.approve_file(str(txt_file))
+        assert "error" in result
+
+
+class TestApproveFiles:
+    def test_approve_multiple_files(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        story1 = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_001" / "story.md"
+        )
+        story2 = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_002" / "story.md"
+        )
+        result = mgr.approve_files([story1, story2])
+        assert "error" not in result
+        assert len(result["approved"]) == 2
+
+    def test_partial_failure(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        story1 = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_001" / "story.md"
+        )
+        result = mgr.approve_files([story1, "/nonexistent/file.md"])
+        assert len(result["approved"]) == 1
+        assert "errors" in result
+
+    def test_all_fail(self, tmp_project: Path) -> None:
+        mgr = ApprovalManager(tmp_project)
+        result = mgr.approve_files(["/nonexistent/a.md", "/nonexistent/b.md"])
+        assert "error" in result
+
+
 class TestCheckApproval:
     def test_feature_not_approved(self, project_with_feature: Path) -> None:
         mgr = ApprovalManager(project_with_feature)
@@ -207,6 +284,42 @@ class TestApproveCLI:
         patch_root(tmp_project)
         runner = CliRunner()
         result = runner.invoke(cli, ["approve", "bogus", "anything"])
+        assert result.exit_code != 0
+
+
+class TestApproveFileCLI:
+    def test_approve_file_by_path(self, project_with_feature: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
+        patch_root(project_with_feature)
+        feat_path = str(
+            project_with_feature / ".ssdd" / "specs"
+            / "FEAT_001_checkout_resume" / "feature.md"
+        )
+        runner = CliRunner()
+        result = runner.invoke(cli, ["approve-file", feat_path])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert len(data["approved"]) == 1
+
+    def test_approve_multiple_files(self, project_with_epic: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
+        patch_root(project_with_epic)
+        story1 = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_001" / "story.md"
+        )
+        story2 = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_002" / "story.md"
+        )
+        runner = CliRunner()
+        result = runner.invoke(cli, ["approve-file", story1, story2])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert len(data["approved"]) == 2
+
+    def test_approve_file_not_found(self, tmp_project: Path, patch_root) -> None:  # type: ignore[no-untyped-def]
+        patch_root(tmp_project)
+        runner = CliRunner()
+        result = runner.invoke(cli, ["approve-file", "/nonexistent/file.md"])
         assert result.exit_code != 0
 
 

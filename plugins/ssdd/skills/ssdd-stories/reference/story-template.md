@@ -14,6 +14,7 @@ acceptance_criteria:
   - id: "AC_002"
     description: "When <action>, then <expected result>"
     status: "TODO"
+approved: ""
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

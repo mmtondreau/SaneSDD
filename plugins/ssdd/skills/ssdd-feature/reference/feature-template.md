@@ -2,6 +2,7 @@
 id: "FEAT_NNN"
 title: "<Concise feature title>"
 status: "TODO"
+approved: ""
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

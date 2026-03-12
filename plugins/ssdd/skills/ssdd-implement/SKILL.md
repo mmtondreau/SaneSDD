@@ -55,7 +55,7 @@ Parse the JSON output. If `approved` is `false`, display the list of unapproved 
 > **Warning:** The following artifacts from the previous step have not been approved:
 > - _(list each path from the `unapproved` array)_
 >
-> Run `/ssdd-approve plan <name>` to approve, or confirm you want to continue without approval.
+> Approve each file by running `/ssdd-approve <file-path>` for each unapproved file listed above, or confirm you want to continue without approval.
 > **Continue without approval?**
 
 If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.

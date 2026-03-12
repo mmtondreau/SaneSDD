@@ -396,12 +396,24 @@ def status(ctx: click.Context, name: str | None, artifact_type: str | None) -> N
 # ── Approval commands ────────────────────────────────────────────
 
 
+@cli.command("approve-file")
+@click.argument("files", nargs=-1, required=True)
+@click.pass_context
+def approve_file(ctx: click.Context, files: tuple[str, ...]) -> None:
+    """Approve one or more files by path."""
+    mgr = ApprovalManager(ctx.obj["root"])
+    result = mgr.approve_files(list(files))
+    if "error" in result:
+        raise click.ClickException(result["error"])
+    click.echo(json.dumps(result, indent=2))
+
+
 @cli.command("approve")
 @click.argument("step", type=click.Choice(ApprovalManager.STEPS))
 @click.argument("name")
 @click.pass_context
 def approve(ctx: click.Context, step: str, name: str) -> None:
-    """Approve artifacts from a workflow step."""
+    """Approve artifacts from a workflow step (legacy)."""
     mgr = ApprovalManager(ctx.obj["root"])
     result = mgr.approve(step, name)
     if "error" in result:

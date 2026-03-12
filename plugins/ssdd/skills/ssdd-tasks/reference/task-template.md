@@ -5,6 +5,7 @@ status: "TODO"
 story: "STORY_NNN"
 depends_on: []
 ac_mapping: ["AC_NNN"]
+approved: ""
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"
 ---

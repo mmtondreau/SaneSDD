@@ -22,15 +22,15 @@ SaneSDD (Sane Spec Driven Development) guides you through a structured, phased w
 ```
 /ssdd-init                          # 1. Initialize project structure
 /ssdd-feature                       # 2. Define a feature (interactive)
-/ssdd-approve feature <name>        #    Review & approve
+/ssdd-approve <file-path>           #    Review & approve individual files
 /ssdd-design <feature-name>         # 3. Design the architecture (interactive)
-/ssdd-approve design <name>         #    Review & approve
+/ssdd-approve <file-path>           #    Review & approve
 /ssdd-stories <feature-name>        # 4. Generate user stories
-/ssdd-approve stories <name>        #    Review & approve
+/ssdd-approve <path1> <path2> ...   #    Review & approve each story
 /ssdd-tasks <feature-name>          # 5. Generate implementation tasks
-/ssdd-approve tasks <name>          #    Review & approve
+/ssdd-approve <path1> <path2> ...   #    Review & approve each task
 /ssdd-plan <feature-name>           # 6. Create execution plan
-/ssdd-approve plan <name>           #    Review & approve
+/ssdd-approve <file-path>           #    Review & approve
 /ssdd-implement <story-id>          # 7. Implement one story (on a branch)
 /ssdd-merge <story-id>              # 8. Merge completed story to main
 ```
@@ -49,7 +49,7 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 | `/ssdd-plan <name>` | Tech Lead | Auto | Create ordered execution plan |
 | `/ssdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Promote to Spec |
 | `/ssdd-merge <story>` | — | Auto | Merge completed story branch to main after verification |
-| `/ssdd-approve <step> <name>` | — | Auto | Mark artifacts as reviewed/approved (step: feature, design, stories, tasks, plan) |
+| `/ssdd-approve <file-path> [...]` | — | Auto | Mark individual artifact files as reviewed/approved |
 | `/ssdd-status [name]` | — | Info | Show status of all epics, a specific epic, or a specific story |
 | `/ssdd-help` | — | Info | Show this help |
 
@@ -141,15 +141,16 @@ Create `.roles/<rolename>.md` files to customize role behavior:
 
 ### Approval Workflow
 
-After each step, SaneSDD asks you to review the generated artifacts. Use `/ssdd-approve` to record your review:
+After each step, SaneSDD asks you to review the generated artifacts. Use `/ssdd-approve` to record your review on individual files:
 
 ```
-/ssdd-approve feature checkout       # Approve a feature spec
-/ssdd-approve design checkout        # Approve epic design
-/ssdd-approve stories checkout       # Approve all stories in an epic
-/ssdd-approve tasks checkout         # Approve all tasks in an epic
-/ssdd-approve plan checkout          # Approve the development plan
+/ssdd-approve .ssdd/specs/THEME_001_checkout/features/FEAT_001_checkout/feature.md
+/ssdd-approve .ssdd/work/EPIC_001_checkout/high_level_design.md
+/ssdd-approve .ssdd/work/EPIC_001_checkout/stories/STORY_001/story.md .ssdd/work/EPIC_001_checkout/stories/STORY_002/story.md
+/ssdd-approve .ssdd/work/EPIC_001_checkout/development_plan.yaml
 ```
+
+You can approve multiple files in a single command. Each file's `approved` frontmatter field will be set to today's date.
 
 If you proceed to the next step without approving, SaneSDD will warn you and list the unapproved artifacts. You can choose to continue anyway or go back and approve first.
 

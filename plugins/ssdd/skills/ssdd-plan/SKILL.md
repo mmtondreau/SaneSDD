@@ -46,7 +46,7 @@ Parse the JSON output. If `approved` is `false`, display the list of unapproved 
 > **Warning:** The following artifacts from the previous step have not been approved:
 > - _(list each path from the `unapproved` array)_
 >
-> Run `/ssdd-approve tasks <name>` to approve, or confirm you want to continue without approval.
+> Approve each file by running `/ssdd-approve <file-path>` for each unapproved file listed above, or confirm you want to continue without approval.
 > **Continue without approval?**
 
 If the user says "no" or does not confirm, STOP. If the user says "yes" or explicitly opts in, proceed.
@@ -113,4 +113,4 @@ List the actual file path that was generated.
 
 4. Tell the user:
 
-> **Next step:** Review the file above, then run `/ssdd-approve plan <epic-name>` to approve. Then run `/ssdd-implement <story-id>` to start implementing. Stories should be implemented in plan order.
+> **Next step:** Review the file above, then approve it by running `/ssdd-approve .ssdd/work/EPIC_NNN_slug/development_plan.yaml` (use the actual path). Then run `/ssdd-implement <story-id>` to start implementing. Stories should be implemented in plan order.
