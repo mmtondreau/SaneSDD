@@ -22,24 +22,6 @@ class Status(Enum):
     BLOCKED = "BLOCKED"
 
 
-@dataclass
-class AcEntry:
-    """A single acceptance criterion within a story."""
-    id: str
-    description: str
-    status: Status
-
-    def to_dict(self) -> dict[str, str]:
-        return {"id": self.id, "description": self.description, "status": self.status.value}
-
-    @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> AcEntry:
-        return cls(
-            id=d["id"],
-            description=d["description"],
-            status=Status(d.get("status", "TODO")),
-        )
-
 
 @dataclass
 class Document:
@@ -70,22 +52,8 @@ class Document:
         return list(self.metadata.get("depends_on", []))
 
     @property
-    def acceptance_criteria(self) -> list[AcEntry]:
-        raw = self.metadata.get("acceptance_criteria", [])
-        return [AcEntry.from_dict(ac) for ac in raw]
-
-    @acceptance_criteria.setter
-    def acceptance_criteria(self, entries: list[AcEntry]) -> None:
-        self.metadata["acceptance_criteria"] = [e.to_dict() for e in entries]
-        self.metadata["updated"] = date.today().isoformat()
-
-    @property
     def ac_mapping(self) -> list[str]:
         return list(self.metadata.get("ac_mapping", []))
-
-    def all_acs_done(self) -> bool:
-        acs = self.acceptance_criteria
-        return len(acs) > 0 and all(ac.status == Status.DONE for ac in acs)
 
 
 @dataclass

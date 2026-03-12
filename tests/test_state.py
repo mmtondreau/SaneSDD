@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ssdd.state import AcEntry, StateManager, Status
+from ssdd.state import StateManager, Status
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -16,26 +16,6 @@ class TestStatus:
         assert Status.DONE.value == "DONE"
         assert Status.BLOCKED.value == "BLOCKED"
 
-
-class TestAcEntry:
-    def test_from_dict(self) -> None:
-        ac = AcEntry.from_dict({
-            "id": "AC_001",
-            "description": "Test criterion",
-            "status": "TODO",
-        })
-        assert ac.id == "AC_001"
-        assert ac.description == "Test criterion"
-        assert ac.status == Status.TODO
-
-    def test_to_dict(self) -> None:
-        ac = AcEntry(id="AC_001", description="Test", status=Status.DONE)
-        d = ac.to_dict()
-        assert d == {"id": "AC_001", "description": "Test", "status": "DONE"}
-
-    def test_default_status(self) -> None:
-        ac = AcEntry.from_dict({"id": "AC_001", "description": "Test"})
-        assert ac.status == Status.TODO
 
 
 class TestStateManager:
@@ -94,27 +74,6 @@ class TestStateManager:
         assert len(texts) == 2
         assert "Save Cart" in texts[0]
         assert "Guest Checkout" in texts[1]
-
-    def test_acceptance_criteria(self, project_with_stories: Path) -> None:
-        state = StateManager(project_with_stories)
-        stories = state.list_stories("checkout_resume")
-        assert len(stories) == 2
-        story = stories[0]
-        acs = story.acceptance_criteria
-        assert len(acs) == 2
-        assert acs[0].id == "AC_001"
-        assert acs[1].id == "AC_002"
-        assert not story.all_acs_done()
-
-    def test_all_acs_done(self, project_with_stories: Path) -> None:
-        state = StateManager(project_with_stories)
-        stories = state.list_stories("checkout_resume")
-        story = stories[0]
-        acs = story.acceptance_criteria
-        for ac in acs:
-            ac.status = Status.DONE
-        story.acceptance_criteria = acs
-        assert story.all_acs_done()
 
     def test_next_feature_number_empty(self, tmp_project: Path) -> None:
         state = StateManager(tmp_project)

@@ -149,10 +149,6 @@ status: TODO | IN_PROGRESS | DONE | BLOCKED
 epic: "EPIC_NNN"
 spec_feature: "FEAT_NNN"     # optional: which spec feature to promote to
 depends_on: []
-acceptance_criteria:
-  - id: "AC_NNN"
-    description: "[Given <precondition>,] when <action>, then <expected result>"
-    status: "TODO"
 approved: ""                    # set to "YYYY-MM-DD" by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"

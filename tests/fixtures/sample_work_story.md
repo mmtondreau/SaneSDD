@@ -5,13 +5,6 @@ status: "DONE"
 epic: "EPIC_001"
 spec_feature: "FEAT_001"
 depends_on: []
-acceptance_criteria:
-  - id: "AC_001"
-    description: "Cart items are saved when user logs out"
-    status: "DONE"
-  - id: "AC_002"
-    description: "Cart is restored when user logs back in"
-    status: "DONE"
 created: "2026-02-28"
 updated: "2026-02-28"
 ---

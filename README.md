@@ -324,13 +324,6 @@ status: "TODO"
 epic: "EPIC_001"
 spec_feature: "FEAT_001"
 depends_on: []
-acceptance_criteria:
-  - id: "AC_001"
-    description: "Given a user with items in their cart, when they log out, then the cart items are persisted"
-    status: "TODO"
-  - id: "AC_002"
-    description: "When the user logs back in, then their previously saved cart is restored"
-    status: "TODO"
 created: "2026-02-23"
 updated: "2026-02-23"
 ---
@@ -812,10 +805,6 @@ status: TODO | IN_PROGRESS | DONE | BLOCKED
 epic: "EPIC_NNN"
 spec_feature: "FEAT_NNN"     # optional: which spec feature to promote to
 depends_on: []
-acceptance_criteria:
-  - id: "AC_NNN"
-    description: "[Given <precondition>,] when <action>, then <expected result>"
-    status: "TODO"
 approved: "YYYY-MM-DD"          # optional, set by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"

@@ -46,10 +46,6 @@ spec_feature: "<FEAT_NNN>"
 depends_on: []
 related_stories: []
 related_components: []
-acceptance_criteria:
-  - id: "AC_NNN"
-    description: "[Given <precondition>,] when <action>, then <expected result>"
-    status: "TODO"
 created: "<today's date YYYY-MM-DD>"
 updated: "<today's date YYYY-MM-DD>"
 ---

@@ -86,16 +86,15 @@ title: "Guest Checkout"
 status: "TODO"
 epic: "EPIC_001"
 depends_on: []
-acceptance_criteria:
-  - id: "AC_003"
-    description: "Guest users can checkout without account"
-    status: "TODO"
 created: "2026-02-23"
 updated: "2026-02-23"
 ---
 
 ## User Story
 As a guest, I want to checkout without creating an account.
+
+## Acceptance Criteria
+- [ ] **AC_003**: Guest users can checkout without account
 """
     (story_002_dir / "story.md").write_text(story_002_content)
 

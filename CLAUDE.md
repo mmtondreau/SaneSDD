@@ -161,10 +161,6 @@ spec_feature: "FEAT_NNN"     # optional: which spec feature to promote to
 depends_on: []
 related_stories: []           # STORY_NNN IDs with semantic (non-dependency) relationships
 related_components: []        # Component names this story touches (bidirectional with component stories field)
-acceptance_criteria:
-  - id: "AC_NNN"
-    description: "<testable criterion>"
-    status: "TODO"
 approved: ""                         # set to "YYYY-MM-DD" by /ssdd-approve
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"

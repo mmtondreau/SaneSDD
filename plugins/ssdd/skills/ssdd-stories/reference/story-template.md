@@ -7,13 +7,6 @@ spec_feature: "FEAT_NNN"
 depends_on: []
 related_stories: []
 related_components: []
-acceptance_criteria:
-  - id: "AC_001"
-    description: "Given <precondition>, when <action>, then <expected result>"
-    status: "TODO"
-  - id: "AC_002"
-    description: "When <action>, then <expected result>"
-    status: "TODO"
 approved: ""
 created: "YYYY-MM-DD"
 updated: "YYYY-MM-DD"

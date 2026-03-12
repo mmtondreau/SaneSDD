@@ -70,8 +70,7 @@ class TestPromotionManager:
         assert doc.id == "STORY_001"
         assert doc.title == "Save Cart"
         assert doc.status.value == "DONE"
-        # Spec story should not have acceptance_criteria
-        assert "acceptance_criteria" not in doc.metadata
+        assert doc.metadata.get("feature") == "FEAT_001"
 
     def test_promote_story_uses_existing_theme(self, project_for_promotion: Path) -> None:
         root = project_for_promotion
