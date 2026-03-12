@@ -104,13 +104,8 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Display a **Files to review** section listing every file that was created or modified. Use this format:
-
-> **Files to review:**
-> - `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
-
-List the actual file path that was generated.
-
-4. Tell the user:
-
-> **Next step:** Review the file above, then approve it by running `/ssdd-approve .ssdd/work/EPIC_NNN_slug/development_plan.yaml` (use the actual path). Then run `/ssdd-implement <story-id>` to start implementing. Stories should be implemented in plan order.
+3. Generate and display the **Files to review** section:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review plan <feature-name>
+```
+Display the output to the user exactly as returned.

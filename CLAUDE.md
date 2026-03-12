@@ -31,6 +31,7 @@ Available commands:
 - `ssdd-util approve-file <path> [<path> ...]` — approves files or directories (recursively) by path; paths can be relative to project root or to `.ssdd/`; sets `approved` frontmatter field to today's date; outputs JSON
 - `ssdd-util approve <step> <name>` — (legacy) marks all artifacts for a step as approved; outputs JSON
 - `ssdd-util check-approval <step> <name>` — checks if prior step's artifacts are approved; outputs JSON
+- `ssdd-util files-to-review <step> <name> [--promoted-story <path>]` — generates markdown "Files to review" output with clickable links; steps: feature, design, stories, tasks, plan, implement, init
 
 ## Sub-Agent Architecture
 

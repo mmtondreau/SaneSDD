@@ -86,17 +86,11 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Display a **Files to review** section listing every file that was created or modified. Use this format:
-
-> **Files to review:**
-> - `.ssdd/specs/THEME_NNN_slug/theme.md`
-> - `.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`
-
-List the actual file paths that were generated — do not use glob patterns.
-
-4. Tell the user:
-
-> **Next step:** Review the files above, then approve them by running `/ssdd-approve <file-path>` for each file (e.g., `/ssdd-approve .ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/feature.md`). Then run `/ssdd-design <feature-name>` to create the high-level design.
+3. Generate and display the **Files to review** section:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review feature <feature-name>
+```
+Display the output to the user exactly as returned.
 
 ## User Input
 $ARGUMENTS

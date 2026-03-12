@@ -265,25 +265,8 @@ Report a summary of results:
 - Any tasks that ended up BLOCKED
 - Any ACs that remain incomplete
 
-Display a **Files to review** section listing every file that was created or modified, grouped by type. Use this format:
-
-> **Files to review:**
->
-> Updated stories and tasks:
-> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`
-> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
-> - _(list all updated)_
->
-> Promoted spec stories (if any):
-> - `.ssdd/specs/THEME_NNN_slug/features/FEAT_NNN_slug/stories/STORY_NNN_slug.md`
-> - _(list all promoted)_
-
-List the actual file paths — do not use glob patterns.
-
-If the story is DONE, tell the user:
-
-> **Story complete!** Run `/ssdd-merge <story_id>` to merge the story branch to main.
-
-If the story is NOT complete, tell the user:
-
-> **Story incomplete.** Review the blocked tasks above, then re-run `/ssdd-implement <story_id>` to continue.
+Generate and display the **Files to review** section. If any stories were promoted during Step 4b, pass their paths via `--promoted-story`:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review implement <story_id> [--promoted-story <path> ...]
+```
+Display the output to the user exactly as returned.

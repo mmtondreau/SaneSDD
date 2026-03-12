@@ -104,19 +104,8 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Display a **Files to review** section listing every file that was created or modified, grouped by story. Use this format:
-
-> **Files to review:**
->
-> STORY_NNN tasks:
-> - `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
-> - _(list all tasks in this story)_
->
-> STORY_NNN tasks:
-> - _(repeat for each story)_
-
-List the actual file paths that were generated — do not use glob patterns.
-
-4. Tell the user:
-
-> **Next step:** Review the files above, then approve each task by running `/ssdd-approve <file-path>` for each task file. You can approve multiple files at once: `/ssdd-approve <path1> <path2> ...`. Then run `/ssdd-plan <feature-name>` to create the execution plan.
+3. Generate and display the **Files to review** section:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review tasks <feature-name>
+```
+Display the output to the user exactly as returned.

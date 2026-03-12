@@ -81,28 +81,34 @@ Base all content on what you observe in the actual code and any provided documen
 "${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" regenerate-index
 ```
 
+## Step 6: Generate Source File Descriptions
+
+INDEX.md now includes a **Source Files** section listing every tracked file in the repo. Each entry uses the format `- <path>: <description>`. After regeneration, entries for new files have empty descriptions (e.g., `- src/foo.py:`).
+
+1. **Read `.ssdd/INDEX.md`** and find all entries in the `## Source Files` section that have empty descriptions (lines ending with just `:`).
+2. **For each file with an empty description**, read the file and write a **single-sentence description** of what it does. Keep descriptions concise and factual — describe the file's purpose, not implementation details.
+3. **Update `.ssdd/INDEX.md`** using the Edit tool to fill in the descriptions. You can batch multiple edits.
+
+Example before:
+```
+- src/config.py:
+- src/main.py:
+```
+
+Example after:
+```
+- src/config.py: Path constants and project root detection.
+- src/main.py: CLI entry point that dispatches to the utility command group.
+```
+
 ## Final Message
 
 After completing all steps, tell the user:
 
 > **Next step:** Run `/ssdd-feature` to define your first feature. Run `/ssdd-help` for a full workflow overview.
 
-If design documents were generated for an existing project, also display a **Files to review** section listing every file that was created or modified, grouped by type. Use this format:
-
-> **Files to review:**
->
-> System architecture:
-> - `.ssdd/design/design.md`
->
-> Domains:
-> - `.ssdd/design/DOMAIN_001_<name>/domain.md`
-> - `.ssdd/design/DOMAIN_002_<name>/domain.md`
-> - _(list all)_
->
-> Components:
-> - `.ssdd/design/DOMAIN_001_<name>/COMP_<name>.md`
-> - _(list all)_
-
-List the actual file paths that were generated — do not use glob patterns. Then tell the user:
-
-> Review these files for accuracy before proceeding. Domains define your system's bounded contexts; components detail the internal structure. Use `/ssdd-feature` to define your next feature.
+If design documents were generated for an existing project, also generate and display the **Files to review** section:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review init
+```
+Display the output to the user exactly as returned (it includes review guidance and next step).

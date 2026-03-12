@@ -10,6 +10,8 @@ import click
 from ssdd.agent_context import AgentContextManager
 from ssdd.approval_manager import ApprovalManager
 from ssdd.config import DESIGN_DIR, SPECS_DIR, WORK_DIR, find_project_root
+from ssdd.files_to_review import STEPS as FILES_TO_REVIEW_STEPS
+from ssdd.files_to_review import FilesToReviewGenerator
 from ssdd.design_manager import DesignManager
 from ssdd.epic_manager import EpicManager
 from ssdd.index_manager import IndexManager
@@ -432,3 +434,20 @@ def check_approval(ctx: click.Context, step: str, name: str) -> None:
     if "error" in result:
         raise click.ClickException(result["error"])
     click.echo(json.dumps(result))
+
+
+# ── Files to review command ─────────────────────────────────────
+
+
+@cli.command("files-to-review")
+@click.argument("step", type=click.Choice(FILES_TO_REVIEW_STEPS))
+@click.argument("name", default="")
+@click.option("--promoted-story", multiple=True, help="Promoted spec story path(s).")
+@click.pass_context
+def files_to_review(
+    ctx: click.Context, step: str, name: str, promoted_story: tuple[str, ...]
+) -> None:
+    """Generate 'Files to review' markdown for a workflow step."""
+    gen = FilesToReviewGenerator(ctx.obj["root"])
+    output = gen.generate(step, name, list(promoted_story) if promoted_story else None)
+    click.echo(output)

@@ -112,27 +112,8 @@ Wait for the sub-agent to complete.
 
 2. Report the sub-agent's results to the user.
 
-3. Display a **Files to review** section listing every file that was created or modified, grouped by type. Use this format:
-
-> **Files to review:**
->
-> Epic:
-> - `.ssdd/work/EPIC_NNN_slug/epic.md`
-> - `.ssdd/work/EPIC_NNN_slug/high_level_design.md`
->
-> System architecture:
-> - `.ssdd/design/design.md`
->
-> Domains:
-> - `.ssdd/design/DOMAIN_NNN_slug/domain.md`
-> - _(list all new or updated)_
->
-> Components:
-> - `.ssdd/design/DOMAIN_NNN_slug/COMP_slug.md`
-> - _(list all new or updated)_
-
-List the actual file paths that were generated — do not use glob patterns.
-
-4. Tell the user:
-
-> **Next step:** Review the files above, then approve them by running `/ssdd-approve <file-path>` for each file (e.g., `/ssdd-approve .ssdd/work/EPIC_NNN_slug/high_level_design.md`). Then run `/ssdd-stories <feature-name>` to generate user stories.
+3. Generate and display the **Files to review** section:
+```bash
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review design <feature-name>
+```
+Display the output to the user exactly as returned.
