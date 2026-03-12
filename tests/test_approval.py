@@ -180,6 +180,62 @@ class TestApproveFile:
         assert "error" in result
 
 
+class TestApproveDirectory:
+    def test_approve_directory_recursively(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        story_dir = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories" / "STORY_001"
+        )
+        result = mgr.approve_file(story_dir)
+        assert "error" not in result
+        # story.md + TASK_001 + TASK_002 = 3 files
+        assert len(result["approved"]) == 3
+
+    def test_approve_all_stories_dir(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        stories_dir = str(
+            project_with_epic / ".ssdd" / "work"
+            / "EPIC_001_checkout_resume" / "stories"
+        )
+        result = mgr.approve_file(stories_dir)
+        assert "error" not in result
+        # STORY_001: story.md + 2 tasks, STORY_002: story.md + 1 task = 5
+        assert len(result["approved"]) == 5
+
+    def test_approve_epic_dir(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        epic_dir = str(
+            project_with_epic / ".ssdd" / "work" / "EPIC_001_checkout_resume"
+        )
+        result = mgr.approve_file(epic_dir)
+        assert "error" not in result
+        # epic.md + dev_plan.yaml + 2 stories + 3 tasks = 7
+        assert len(result["approved"]) == 7
+
+    def test_approve_empty_dir(self, tmp_project: Path) -> None:
+        mgr = ApprovalManager(tmp_project)
+        empty_dir = tmp_project / ".ssdd" / "design"
+        result = mgr.approve_file(str(empty_dir))
+        assert "error" in result
+
+    def test_approve_relative_to_ssdd(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        result = mgr.approve_file(
+            "work/EPIC_001_checkout_resume/stories/STORY_001"
+        )
+        assert "error" not in result
+        assert len(result["approved"]) == 3
+
+    def test_approve_file_relative_to_ssdd(self, project_with_epic: Path) -> None:
+        mgr = ApprovalManager(project_with_epic)
+        result = mgr.approve_file(
+            "work/EPIC_001_checkout_resume/stories/STORY_001/story.md"
+        )
+        assert "error" not in result
+        assert len(result["approved"]) == 1
+
+
 class TestApproveFiles:
     def test_approve_multiple_files(self, project_with_epic: Path) -> None:
         mgr = ApprovalManager(project_with_epic)

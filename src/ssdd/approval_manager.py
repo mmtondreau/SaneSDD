@@ -51,28 +51,85 @@ class ApprovalManager:
         )
         return {"path": str(path), "approved": data["approved"]}
 
-    def approve_file(self, file_path: str) -> dict[str, Any]:
-        """Approve a single file by path.
-
-        Accepts absolute paths or paths relative to the project root.
-        Works with both markdown files (frontmatter) and YAML files.
-        """
+    def _resolve_path(self, file_path: str) -> Path:
+        """Resolve a path that may be absolute, relative to project root,
+        or relative to the .ssdd/ directory."""
         path = Path(file_path)
-        if not path.is_absolute():
-            path = self._root / path
-        path = path.resolve()
+        if path.is_absolute():
+            return path.resolve()
+        # Try relative to project root first
+        candidate = self._root / path
+        if candidate.exists():
+            return candidate.resolve()
+        # Try relative to .ssdd/
+        candidate = self._root / ".ssdd" / path
+        if candidate.exists():
+            return candidate.resolve()
+        # Default to project root (will produce a "not found" error)
+        return (self._root / path).resolve()
+
+    def _collect_approvable_files(self, directory: Path) -> list[Path]:
+        """Recursively collect all approvable files (.md, .yaml, .yml)
+        under a directory, excluding agent context files."""
+        files: list[Path] = []
+        for child in sorted(directory.rglob("*")):
+            if not child.is_file():
+                continue
+            # Skip agent context files
+            if "/agent/" in str(child):
+                continue
+            if child.suffix in (".md", ".yaml", ".yml"):
+                files.append(child)
+        return files
+
+    def _approve_directory(self, directory: Path, original_path: str) -> dict[str, Any]:
+        """Approve all approvable files under a directory."""
+        files = self._collect_approvable_files(directory)
+        if not files:
+            return {"error": f"No approvable files found under: {original_path}"}
+        results: list[dict[str, Any]] = []
+        errors: list[str] = []
+        for f in files:
+            r = self._approve_single_file(f)
+            if "error" in r:
+                errors.append(r["error"])
+            else:
+                results.append(r)
+        if errors and not results:
+            return {"error": "; ".join(errors)}
+        output: dict[str, Any] = {"approved": results}
+        if errors:
+            output["errors"] = errors
+        return output
+
+    def approve_file(self, file_path: str) -> dict[str, Any]:
+        """Approve a single file or all approvable files under a directory.
+
+        Accepts absolute paths, paths relative to the project root,
+        or paths relative to the .ssdd/ directory (e.g. ``work/EPIC_001_*/...``).
+        When given a directory, recursively approves all .md and .yaml/.yml files.
+        """
+        path = self._resolve_path(file_path)
+
+        if path.is_dir():
+            return self._approve_directory(path, file_path)
 
         if not path.exists():
             return {"error": f"File not found: {file_path}"}
 
-        if path.suffix == ".yaml" or path.suffix == ".yml":
-            result = self._approve_yaml(path)
+        result = self._approve_single_file(path)
+        if "error" in result:
+            return result
+        return {"approved": [result]}
+
+    def _approve_single_file(self, path: Path) -> dict[str, Any]:
+        """Approve a single resolved file path."""
+        if path.suffix in (".yaml", ".yml"):
+            return self._approve_yaml(path)
         elif path.suffix == ".md":
-            result = self._approve_md(path)
+            return self._approve_md(path)
         else:
             return {"error": f"Unsupported file type: {path.suffix}"}
-
-        return {"approved": [result]}
 
     def approve_files(self, file_paths: list[str]) -> dict[str, Any]:
         """Approve multiple files by path."""

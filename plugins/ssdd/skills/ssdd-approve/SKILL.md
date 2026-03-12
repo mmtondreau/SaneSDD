@@ -13,18 +13,26 @@ This skill records user approval of individual artifact files. It is a determini
 ## Usage
 
 ```
-/ssdd-approve <file-path> [<file-path> ...]
+/ssdd-approve <path> [<path> ...]
 ```
 
-Where `<file-path>` is the path to one or more artifact files to approve. Paths can be absolute or relative to the project root.
+Where `<path>` is a file or directory. When a directory is given, all approvable files (`.md`, `.yaml`) under it are approved recursively.
+
+Paths can be:
+- Absolute
+- Relative to the project root (e.g. `.ssdd/work/...`)
+- Relative to `.ssdd/` (e.g. `work/...`, `specs/...`)
 
 **Examples:**
 ```
-/ssdd-approve .ssdd/specs/THEME_001_checkout/features/FEAT_001_checkout/feature.md
-/ssdd-approve .ssdd/work/EPIC_001_checkout/high_level_design.md
-/ssdd-approve .ssdd/work/EPIC_001_checkout/stories/STORY_001/story.md .ssdd/work/EPIC_001_checkout/stories/STORY_002/story.md
-/ssdd-approve .ssdd/work/EPIC_001_checkout/stories/STORY_001/TASK_001_auth.md
-/ssdd-approve .ssdd/work/EPIC_001_checkout/development_plan.yaml
+/ssdd-approve specs/THEME_001_checkout/features/FEAT_001_checkout/feature.md
+/ssdd-approve work/EPIC_001_checkout/high_level_design.md
+/ssdd-approve work/EPIC_001_checkout/stories/STORY_001/story.md work/EPIC_001_checkout/stories/STORY_002/story.md
+/ssdd-approve work/EPIC_001_checkout/stories/STORY_001/TASK_001_auth.md
+/ssdd-approve work/EPIC_001_checkout/development_plan.yaml
+/ssdd-approve work/EPIC_001_checkout/stories/STORY_001          # approves story.md + all tasks
+/ssdd-approve work/EPIC_001_checkout/stories                    # approves all stories and tasks
+/ssdd-approve work/EPIC_001_checkout                            # approves everything in the epic
 ```
 
 ## Step 1: Parse Arguments
@@ -33,18 +41,19 @@ Parse `$ARGUMENTS` to extract one or more file paths.
 
 If no arguments are provided, tell the user the expected usage:
 
-> **Usage:** `/ssdd-approve <file-path> [<file-path> ...]`
+> **Usage:** `/ssdd-approve <path> [<path> ...]`
 >
-> Approve individual artifact files by path. The `approved` field in the file's frontmatter will be set to today's date.
+> Approve artifact files or directories by path. The `approved` field in each file's frontmatter will be set to today's date. Directories are approved recursively. Paths can be relative to `.ssdd/`.
 >
 > **Approvable files:**
 > | File | Typical path |
 > |------|-------------|
-> | Feature spec | `.ssdd/specs/THEME_NNN_*/features/FEAT_NNN_*/feature.md` |
-> | High-level design | `.ssdd/work/EPIC_NNN_*/high_level_design.md` |
-> | Work story | `.ssdd/work/EPIC_NNN_*/stories/STORY_NNN/story.md` |
-> | Task | `.ssdd/work/EPIC_NNN_*/stories/STORY_NNN/TASK_NNN_*.md` |
-> | Development plan | `.ssdd/work/EPIC_NNN_*/development_plan.yaml` |
+> | Feature spec | `specs/THEME_NNN_*/features/FEAT_NNN_*/feature.md` |
+> | High-level design | `work/EPIC_NNN_*/high_level_design.md` |
+> | Work story | `work/EPIC_NNN_*/stories/STORY_NNN/story.md` |
+> | Task | `work/EPIC_NNN_*/stories/STORY_NNN/TASK_NNN_*.md` |
+> | Development plan | `work/EPIC_NNN_*/development_plan.yaml` |
+> | Directory | `work/EPIC_NNN_*/stories/STORY_NNN` (approves all files recursively) |
 
 Then STOP.
 

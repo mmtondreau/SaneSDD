@@ -28,7 +28,7 @@ Available commands:
 - `ssdd-util context-path <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file path for a role
 - `ssdd-util read-context <role> --epic <epic_dir>` or `--theme <theme_dir>` — prints the agent context file contents (empty if not found)
 - `ssdd-util status [name] [--type epic|story]` — shows status of an epic, story, or all epics (auto-detects type if omitted)
-- `ssdd-util approve-file <file-path> [<file-path> ...]` — approves individual files by path; sets `approved` frontmatter field to today's date; outputs JSON
+- `ssdd-util approve-file <path> [<path> ...]` — approves files or directories (recursively) by path; paths can be relative to project root or to `.ssdd/`; sets `approved` frontmatter field to today's date; outputs JSON
 - `ssdd-util approve <step> <name>` — (legacy) marks all artifacts for a step as approved; outputs JSON
 - `ssdd-util check-approval <step> <name>` — checks if prior step's artifacts are approved; outputs JSON
 
