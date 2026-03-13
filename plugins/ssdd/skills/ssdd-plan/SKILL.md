@@ -109,3 +109,11 @@ Wait for the sub-agent to complete.
 "${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review plan <feature-name>
 ```
 Display the output to the user exactly as returned.
+
+## User Action
+
+After displaying the files-to-review output, wait for the user's response:
+
+- If the user responds with **A** (approve): Run `/ssdd-approve` on all output files, then display the approval results.
+- If the user responds with **C** (continue): Run `/ssdd-approve` on all output files first, then run `/ssdd-implement` for the first story in plan order (the continue command shown in the output).
+- If the user responds with anything else, treat it as normal conversation.

@@ -82,7 +82,7 @@ If there were any errors (partial approval), also display:
 
 ## Step 4: Suggest Next Step
 
-Based on the file type(s) that were approved, tell the user what to run next:
+Based on the file type(s) that were approved, determine the next command:
 
 | Approved file type | Next Step |
 |-------------------|-----------|
@@ -91,6 +91,18 @@ Based on the file type(s) that were approved, tell the user what to run next:
 | `story.md` | `/ssdd-tasks <feature-name>` |
 | `TASK_*.md` | `/ssdd-plan <feature-name>` |
 | `development_plan.yaml` | `/ssdd-implement <epic-name>` |
+
+Display:
+
+> ---
+> **`[C]`** Continue — `<next-step-command>`
+
+## User Action
+
+After displaying the next step prompt, wait for the user's response:
+
+- If the user responds with **C** (continue): Run the next step command shown above.
+- If the user responds with anything else, treat it as normal conversation.
 
 ## User Input
 $ARGUMENTS

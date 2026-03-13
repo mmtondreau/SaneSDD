@@ -141,8 +141,16 @@ Report a summary:
 
 Check if there are more stories for the epic that are not DONE. Read all story files from `<epic_dir>/stories/*/story.md`. If any stories remain with status not `DONE`, tell the user:
 
-> **Next step:** Run `/ssdd-implement <next_story_id>` to implement the next story.
+> ---
+> **`[C]`** Continue — `/ssdd-implement <next_story_id>`
 
 If ALL stories for the epic are `DONE`, update the epic frontmatter status to `DONE` and tell the user:
 
 > **Epic complete!** All stories for `<epic_slug>` have been implemented and merged.
+
+## User Action
+
+After displaying the post-merge summary, wait for the user's response:
+
+- If the user responds with **C** (continue) and there is a next story: Run `/ssdd-implement <next_story_id>` to start implementing the next story.
+- If the user responds with anything else, treat it as normal conversation.

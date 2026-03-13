@@ -92,5 +92,13 @@ Wait for the sub-agent to complete.
 ```
 Display the output to the user exactly as returned.
 
+## User Action
+
+After displaying the files-to-review output, wait for the user's response:
+
+- If the user responds with **A** (approve): Run `/ssdd-approve` on all output files, then display the approval results.
+- If the user responds with **C** (continue): Run `/ssdd-design <feature-name>` (the next skill in the workflow). This approves all output files first, then proceeds.
+- If the user responds with anything else, treat it as normal conversation.
+
 ## User Input
 $ARGUMENTS

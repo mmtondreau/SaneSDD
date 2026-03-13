@@ -122,8 +122,8 @@ class TestImplementStep:
         assert "Updated stories and tasks:" in output
         assert "[story.md]" in output
         assert "[TASK_" in output
-        # Fixture work story has status DONE
-        assert "complete" in output.lower()
+        # Fixture work story has status DONE — shown as merge action
+        assert "/ssdd-merge" in output
 
     def test_with_promoted_stories(self, project_with_epic: Path) -> None:
         promoted = str(
@@ -146,7 +146,6 @@ class TestImplementStep:
 
         gen = FilesToReviewGenerator(project_with_epic)
         output = gen.generate("implement", "checkout")
-        assert "complete" in output.lower()
         assert "/ssdd-merge" in output
 
 

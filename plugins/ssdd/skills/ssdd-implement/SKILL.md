@@ -270,3 +270,12 @@ Generate and display the **Files to review** section. If any stories were promot
 "${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review implement <story_id> [--promoted-story <path> ...]
 ```
 Display the output to the user exactly as returned.
+
+## User Action
+
+After displaying the files-to-review output, wait for the user's response:
+
+- If the user responds with **C** (continue):
+  - If the story is **DONE**: Run `/ssdd-merge <story_id>` to merge the story branch. After the merge completes, automatically find the next non-DONE story from the development plan (in plan order) and run `/ssdd-implement <next_story_id>`. If no stories remain, the epic is complete.
+  - If the story is **not DONE**: Re-run `/ssdd-implement <story_id>` to retry.
+- If the user responds with anything else, treat it as normal conversation.

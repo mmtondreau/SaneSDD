@@ -105,10 +105,22 @@ Example after:
 
 After completing all steps, tell the user:
 
-> **Next step:** Run `/ssdd-feature` to define your first feature. Run `/ssdd-help` for a full workflow overview.
+> Run `/ssdd-help` for a full workflow overview.
 
 If design documents were generated for an existing project, also generate and display the **Files to review** section:
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" files-to-review init
 ```
-Display the output to the user exactly as returned (it includes review guidance and next step).
+Display the output to the user exactly as returned (it includes review guidance and the `[C] Continue` prompt).
+
+For new projects (no design docs generated), display:
+
+> ---
+> **`[C]`** Continue — `/ssdd-feature`
+
+## User Action
+
+After displaying the final message, wait for the user's response:
+
+- If the user responds with **C** (continue): Run `/ssdd-feature` to start defining the first feature.
+- If the user responds with anything else, treat it as normal conversation.

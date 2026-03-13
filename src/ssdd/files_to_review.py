@@ -68,6 +68,47 @@ class FilesToReviewGenerator:
             return rel[len(".ssdd/"):]
         return rel
 
+    def _find_epic_for_story(self, story_dir: Path) -> Path | None:
+        """Walk up from a story directory to find its parent epic directory."""
+        # story_dir is typically .ssdd/work/EPIC_NNN_slug/stories/STORY_NNN
+        stories_parent = story_dir.parent
+        if stories_parent.name == "stories":
+            return stories_parent.parent
+        return None
+
+    def _next_undone_story(self, epic_dir: Path) -> str | None:
+        """Find the next story in plan order that is not DONE.
+
+        Returns the story directory name (e.g. ``STORY_001``) or ``None``.
+        """
+        from ssdd.plan_parser import PlanParser
+
+        try:
+            parser = PlanParser(self._root)
+            plan = parser.load(epic_dir.name)
+        except FileNotFoundError:
+            return None
+
+        for story_ref in plan.stories:
+            story_dir = story_ref.story_path.parent
+            if not self._is_story_done(story_dir):
+                return story_ref.story_id
+        return None
+
+    def _action_prompt(
+        self,
+        approve_path: str,
+        continue_cmd: str,
+    ) -> str:
+        """Format the [A] Approve All / [C] Continue action prompt."""
+        lines = [
+            "",
+            "---",
+            f"**`[A]`** Approve all — `/ssdd-approve {approve_path}`",
+            f"**`[C]`** Continue — `{continue_cmd}`",
+        ]
+        return "\n".join(lines)
+
     # ── Step implementations ───────────────────────────────────────
 
     def _feature(self, name: str) -> str:
@@ -94,12 +135,7 @@ class FilesToReviewGenerator:
             lines.append(f"- {self._link(f)}")
 
         approve_path = self._ssdd_rel(feature_md) if feature_md.exists() else ""
-        lines.append("")
-        lines.append(
-            f"**Next step:** Review the files above, then approve by running "
-            f"`/ssdd-approve {approve_path}`. "
-            f"Then run `/ssdd-design {name}` to create the high-level design."
-        )
+        lines.append(self._action_prompt(approve_path, f"/ssdd-design {name}"))
         return "\n".join(lines)
 
     def _design(self, name: str) -> str:
@@ -143,12 +179,7 @@ class FilesToReviewGenerator:
         approve_path = self._ssdd_rel(hld) if hld.exists() else ""
         lines = ["**Files to review:**", ""]
         lines.append("\n\n".join(sections))
-        lines.append("")
-        lines.append(
-            f"**Next step:** Review the files above, then approve by running "
-            f"`/ssdd-approve {approve_path}`. "
-            f"Then run `/ssdd-stories {name}` to generate user stories."
-        )
+        lines.append(self._action_prompt(approve_path, f"/ssdd-stories {name}"))
         return "\n".join(lines)
 
     def _stories(self, name: str) -> str:
@@ -173,12 +204,7 @@ class FilesToReviewGenerator:
         approve_path = self._ssdd_rel(stories_dir)
         lines = ["**Files to review:**", ""]
         lines.append(self._format_group("Stories", story_files))
-        lines.append("")
-        lines.append(
-            f"**Next step:** Review the files above, then approve all stories: "
-            f"`/ssdd-approve {approve_path}`. "
-            f"Then run `/ssdd-tasks {name}` to generate implementation tasks."
-        )
+        lines.append(self._action_prompt(approve_path, f"/ssdd-tasks {name}"))
         return "\n".join(lines)
 
     def _tasks(self, name: str) -> str:
@@ -206,12 +232,7 @@ class FilesToReviewGenerator:
         approve_path = self._ssdd_rel(stories_dir)
         lines = ["**Files to review:**", ""]
         lines.append("\n\n".join(sections))
-        lines.append("")
-        lines.append(
-            f"**Next step:** Review the files above, then approve all tasks: "
-            f"`/ssdd-approve {approve_path}`. "
-            f"Then run `/ssdd-plan {name}` to create the execution plan."
-        )
+        lines.append(self._action_prompt(approve_path, f"/ssdd-plan {name}"))
         return "\n".join(lines)
 
     def _plan(self, name: str) -> str:
@@ -224,15 +245,15 @@ class FilesToReviewGenerator:
             return "No development_plan.yaml found."
 
         approve_path = self._ssdd_rel(plan_path)
+        next_story = self._next_undone_story(epic_dir)
+        continue_cmd = (
+            f"/ssdd-implement {next_story}"
+            if next_story
+            else "/ssdd-implement <story-id>"
+        )
         lines = ["**Files to review:**", ""]
         lines.append(f"- {self._link(plan_path)}")
-        lines.append("")
-        lines.append(
-            f"**Next step:** Review the file above, then approve by running "
-            f"`/ssdd-approve {approve_path}`. "
-            f"Then run `/ssdd-implement <story-id>` to start implementing. "
-            f"Stories should be implemented in plan order."
-        )
+        lines.append(self._action_prompt(approve_path, continue_cmd))
         return "\n".join(lines)
 
     def _find_story_dir(self, name: str) -> Path | None:
@@ -305,14 +326,25 @@ class FilesToReviewGenerator:
         lines.append("")
 
         if is_done:
+            # Find the epic for this story to locate next story
+            epic_dir = self._find_epic_for_story(story_dir) if story_dir else None
+            next_story = self._next_undone_story(epic_dir) if epic_dir else None
+
+            lines.append("")
+            lines.append("---")
             lines.append(
-                f"**Story complete!** Run `/ssdd-merge {name}` to merge "
-                f"the story branch to main."
+                f"**`[C]`** Continue — `/ssdd-merge {name}`"
             )
+            if next_story and next_story != name:
+                lines.append("")
+                lines.append(
+                    f"Next story after merge: `/ssdd-implement {next_story}`"
+                )
         else:
+            lines.append("")
+            lines.append("---")
             lines.append(
-                f"**Story incomplete.** Review the blocked tasks above, "
-                f"then re-run `/ssdd-implement {name}` to continue."
+                f"**`[C]`** Continue — `/ssdd-implement {name}`"
             )
         return "\n".join(lines)
 
@@ -346,6 +378,9 @@ class FilesToReviewGenerator:
         lines.append(
             "Review these files for accuracy before proceeding. "
             "Domains define your system's bounded contexts; components detail "
-            "the internal structure. Use `/ssdd-feature` to define your next feature."
+            "the internal structure."
         )
+        lines.append("")
+        lines.append("---")
+        lines.append("**`[C]`** Continue — `/ssdd-feature`")
         return "\n".join(lines)
