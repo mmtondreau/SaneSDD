@@ -27,15 +27,13 @@ SaneSDD (Sane Spec Driven Development) guides you through a structured, phased w
 /ssdd-approve <file-path>           #    Review & approve
 /ssdd-stories <feature-name>        # 4. Generate user stories
 /ssdd-approve <path1> <path2> ...   #    Review & approve each story
-/ssdd-tasks <feature-name>          # 5. Generate implementation tasks
-/ssdd-approve <path1> <path2> ...   #    Review & approve each task
-/ssdd-plan <feature-name>           # 6. Create execution plan
-/ssdd-approve <file-path>           #    Review & approve
-/ssdd-implement <story-id>          # 7. Implement one story (on a branch)
-/ssdd-merge <story-id>              # 8. Merge completed story to main
+/ssdd-plan <feature-name>           # 5. Generate tasks & execution plan
+/ssdd-approve <path1> <path2> ...   #    Review & approve tasks and plan
+/ssdd-implement <story-id>          # 6. Implement one story (on a branch)
+/ssdd-merge <story-id>              # 7. Merge completed story to main
 ```
 
-Repeat steps 7-8 for each story in the feature. Each command tells you what to run next when it completes. Use `/ssdd-approve` after each step to record your review before proceeding.
+Repeat steps 6-7 for each story in the feature. Each command tells you what to run next when it completes. Use `/ssdd-approve` after each step to record your review before proceeding.
 
 ### Command Reference
 
@@ -45,8 +43,7 @@ Repeat steps 7-8 for each story in the feature. Each command tells you what to r
 | `/ssdd-feature` | Product Manager | Interactive | Define a new feature specification |
 | `/ssdd-design <name>` | System Architect | Interactive | Create high-level design, set up epic + domain components |
 | `/ssdd-stories <name>` | Product Manager | Auto | Generate work stories with acceptance criteria (in epic) |
-| `/ssdd-tasks <name>` | Tech Lead | Auto | Generate implementation tasks from work stories |
-| `/ssdd-plan <name>` | Tech Lead | Auto | Create ordered execution plan |
+| `/ssdd-plan <name>` | Tech Lead | Auto | Generate implementation tasks and create ordered execution plan |
 | `/ssdd-implement <story>` | Multi-role | Auto | Implement one story: Developer → Code Review → Task QA → Story QA → Promote to Spec |
 | `/ssdd-merge <story>` | — | Auto | Merge completed story branch to main after verification |
 | `/ssdd-approve <file-path> [...]` | — | Auto | Mark individual artifact files as reviewed/approved |
@@ -133,7 +130,7 @@ ACs use **Given-When-Then** format:
 Create `.roles/<rolename>.md` files to customize role behavior:
 - `.roles/product_manager.md` — Affects `/ssdd-feature`, `/ssdd-stories`
 - `.roles/system_architect.md` — Affects `/ssdd-design`
-- `.roles/tech_lead.md` — Affects `/ssdd-tasks`, `/ssdd-plan`
+- `.roles/tech_lead.md` — Affects `/ssdd-plan`
 - `.roles/developer.md` — Affects `/ssdd-implement` (dev phase)
 - `.roles/code_reviewer.md` — Affects `/ssdd-implement` (code review phase)
 - `.roles/task_qa.md` — Affects `/ssdd-implement` (QA phase)

@@ -1,15 +1,14 @@
 ---
 name: ssdd-plan
-description: Generate a sequenced development_plan.yaml that orders stories and tasks for implementation. Use after /ssdd-tasks.
+description: Generate implementation tasks and a sequenced development plan from stories and design documents. Use after /ssdd-stories.
 disable-model-invocation: true
 user-invocable: true
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 argument-hint: "<feature-name>"
 ---
 
-# Phase: Development Plan (Orchestrator)
+# Phase: Tasks & Development Plan (Orchestrator)
 
-You are the orchestrator for the Tech Lead (Plan) phase. You will gather context, then dispatch a sub-agent to do the actual planning work.
+You are the orchestrator for the Tech Lead (Tasks & Plan) phase. You will gather context, then dispatch a sub-agent to do the actual task generation and planning work.
 
 ## Pre-Checks
 
@@ -31,14 +30,14 @@ If this fails, STOP and tell the user: "No epic found. Run `/ssdd-design <featur
 
 Save the output as `<epic_dir>`.
 
-3. Check that tasks exist by globbing for `<epic_dir>/stories/*/TASK_*.md`.
-If no tasks are found, STOP and tell the user: "No tasks found. Run `/ssdd-tasks <feature-name>` first to generate implementation tasks."
+3. Check that stories exist by globbing for `<epic_dir>/stories/STORY_*/story.md`.
+If no stories are found, STOP and tell the user: "No stories found. Run `/ssdd-stories <feature-name>` first to generate user stories."
 
 ## Approval Check
 
 Run:
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval tasks $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" check-approval stories $ARGUMENTS
 ```
 
 Parse the JSON output. If `approved` is `false`, display the list of unapproved artifacts and ask the user:
@@ -59,7 +58,7 @@ If `approved` is `true`, proceed silently.
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/ssdd-util.sh" read-context tech_lead --epic <epic_dir>
 ```
-Save any output as `PRIOR_CONTEXT`. This may include context from the `/ssdd-tasks` phase since both use the tech_lead role.
+Save any output as `PRIOR_CONTEXT`.
 
 2. Get the context export path:
 ```bash
@@ -75,22 +74,25 @@ Check if `.roles/tech_lead.md` exists. If it does, read its contents and save as
 
 Read the agent prompt template: `reference/agent-prompt.md`
 
+Read the task template: `reference/task-template.md`
+
 Read the plan template: `reference/development-plan-template.yaml`
 
 Combine all gathered context into a single prompt for the sub-agent. The prompt must include:
 
 1. The contents of `reference/agent-prompt.md`
-2. The plan template contents (inline so the sub-agent can reference it)
-3. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
-4. The feature slug, epic directory path, and context export path as concrete values (replace all placeholders)
-5. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this epic. Here is context from your previous session:\n"
-6. The user's arguments: `$ARGUMENTS`
+2. The task template contents (inline so the sub-agent can reference it)
+3. The plan template contents (inline so the sub-agent can reference it)
+4. `ROLE_OVERRIDES` (if any), prefixed with "## Team Overrides\nFollow these additional instructions:\n"
+5. The feature slug, epic directory path, and context export path as concrete values (replace all placeholders)
+6. `PRIOR_CONTEXT` (if any), prefixed with "## Prior Context\nYou have been invoked before for this epic. Here is context from your previous session:\n"
+7. The user's arguments: `$ARGUMENTS`
 
 ## Dispatch Sub-Agent
 
 Use the **Task tool** to launch a sub-agent:
 - `subagent_type`: `"general-purpose"`
-- `description`: `"Tech Lead: create development plan"`
+- `description`: `"Tech Lead: generate tasks and plan"`
 - `prompt`: The combined prompt built above
 
 Wait for the sub-agent to complete.

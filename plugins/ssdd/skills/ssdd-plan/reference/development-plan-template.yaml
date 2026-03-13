@@ -3,6 +3,7 @@
 # This plan defines the execution order for all stories and tasks.
 # Stories and tasks are topologically sorted respecting depends_on fields.
 # Tasks already marked DONE are excluded.
+# Each entry includes the full title for human readability.
 
 epic: "EPIC_NNN_slug"
 generated_at: "YYYY-MM-DDTHH:MM:SS"
@@ -10,21 +11,26 @@ approved: ""
 
 stories:
   - story_id: "STORY_001"
+    title: "Full story title from story.md frontmatter"
     order: 1
     tasks:
       - task_id: "TASK_001"
+        title: "Full task title from task frontmatter"
         order: 1
         depends_on: []
         estimated_effort: small   # small | medium | large
       - task_id: "TASK_002"
+        title: "Full task title from task frontmatter"
         order: 2
         depends_on: ["TASK_001"]
         estimated_effort: medium
 
   - story_id: "STORY_002"
+    title: "Full story title from story.md frontmatter"
     order: 2
     tasks:
       - task_id: "TASK_001"
+        title: "Full task title from task frontmatter"
         order: 1
         depends_on: []
         estimated_effort: large

@@ -77,7 +77,7 @@ class TestStoriesStep:
         output = gen.generate("stories", "checkout")
         assert "Stories:" in output
         assert "[story.md]" in output
-        assert "/ssdd-tasks" in output
+        assert "/ssdd-plan" in output
         # Should suggest directory-level approval
         assert "/ssdd-approve" in output
 
@@ -87,25 +87,13 @@ class TestStoriesStep:
         assert "not found" in output
 
 
-class TestTasksStep:
-    def test_lists_task_files(self, project_with_epic: Path) -> None:
+class TestPlanStep:
+    def test_lists_tasks_and_plan_file(self, project_with_epic: Path) -> None:
         gen = FilesToReviewGenerator(project_with_epic)
-        output = gen.generate("tasks", "checkout")
+        output = gen.generate("plan", "checkout")
         assert "STORY_001 tasks:" in output
         assert "STORY_002 tasks:" in output
         assert "[TASK_" in output
-        assert "/ssdd-plan" in output
-
-    def test_not_found(self, tmp_project: Path) -> None:
-        gen = FilesToReviewGenerator(tmp_project)
-        output = gen.generate("tasks", "nonexistent")
-        assert "not found" in output
-
-
-class TestPlanStep:
-    def test_lists_plan_file(self, project_with_epic: Path) -> None:
-        gen = FilesToReviewGenerator(project_with_epic)
-        output = gen.generate("plan", "checkout")
         assert "[development_plan.yaml]" in output
         assert "/ssdd-implement" in output
 

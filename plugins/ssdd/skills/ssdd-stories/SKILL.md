@@ -126,5 +126,5 @@ Display the output to the user exactly as returned.
 After displaying the files-to-review output, wait for the user's response:
 
 - If the user responds with **A** (approve): Run `/ssdd-approve` on all output files, then display the approval results.
-- If the user responds with **C** (continue): Run `/ssdd-approve` on all output files first, then run `/ssdd-tasks <feature-name>`.
+- If the user responds with **C** (continue): Run `/ssdd-approve` on all output files first, then run `/ssdd-plan <feature-name>`.
 - If the user responds with anything else, treat it as normal conversation.

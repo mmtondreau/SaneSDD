@@ -10,7 +10,7 @@ from ssdd.epic_manager import EpicManager
 from ssdd.state import StateManager
 
 
-STEPS = ("feature", "design", "stories", "tasks", "plan", "implement", "init")
+STEPS = ("feature", "design", "stories", "plan", "implement", "init")
 
 
 class FilesToReviewGenerator:
@@ -204,34 +204,6 @@ class FilesToReviewGenerator:
         approve_path = self._ssdd_rel(stories_dir)
         lines = ["**Files to review:**", ""]
         lines.append(self._format_group("Stories", story_files))
-        lines.append(self._action_prompt(approve_path, f"/ssdd-tasks {name}"))
-        return "\n".join(lines)
-
-    def _tasks(self, name: str) -> str:
-        epic_dir = self._epics.find_epic(name)
-        if not epic_dir:
-            return f"Epic '{name}' not found."
-
-        stories_dir = epic_dir / "stories"
-        if not stories_dir.exists():
-            return "No stories directory found."
-
-        sections: list[str] = []
-        for story_dir in sorted(stories_dir.iterdir()):
-            if not story_dir.is_dir() or not story_dir.name.startswith("STORY_"):
-                continue
-            task_files = sorted(story_dir.glob("TASK_*.md"))
-            if task_files:
-                sections.append(
-                    self._format_group(f"{story_dir.name} tasks", task_files)
-                )
-
-        if not sections:
-            return "No task files found."
-
-        approve_path = self._ssdd_rel(stories_dir)
-        lines = ["**Files to review:**", ""]
-        lines.append("\n\n".join(sections))
         lines.append(self._action_prompt(approve_path, f"/ssdd-plan {name}"))
         return "\n".join(lines)
 
@@ -240,11 +212,30 @@ class FilesToReviewGenerator:
         if not epic_dir:
             return f"Epic '{name}' not found."
 
+        stories_dir = epic_dir / "stories"
         plan_path = epic_dir / "development_plan.yaml"
-        if not plan_path.exists():
-            return "No development_plan.yaml found."
 
-        approve_path = self._ssdd_rel(plan_path)
+        sections: list[str] = []
+
+        # Task files grouped by story
+        if stories_dir.exists():
+            for story_dir in sorted(stories_dir.iterdir()):
+                if not story_dir.is_dir() or not story_dir.name.startswith("STORY_"):
+                    continue
+                task_files = sorted(story_dir.glob("TASK_*.md"))
+                if task_files:
+                    sections.append(
+                        self._format_group(f"{story_dir.name} tasks", task_files)
+                    )
+
+        # Development plan
+        if plan_path.exists():
+            sections.append(f"Development plan:\n- {self._link(plan_path)}")
+
+        if not sections:
+            return "No plan or task files found."
+
+        approve_path = self._ssdd_rel(stories_dir) if stories_dir.exists() else ""
         next_story = self._next_undone_story(epic_dir)
         continue_cmd = (
             f"/ssdd-implement {next_story}"
@@ -252,7 +243,7 @@ class FilesToReviewGenerator:
             else "/ssdd-implement <story-id>"
         )
         lines = ["**Files to review:**", ""]
-        lines.append(f"- {self._link(plan_path)}")
+        lines.append("\n\n".join(sections))
         lines.append(self._action_prompt(approve_path, continue_cmd))
         return "\n".join(lines)
 

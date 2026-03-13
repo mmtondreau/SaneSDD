@@ -17,7 +17,6 @@ SaneSDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/d
   - [/ssdd-feature](#sdd-feature)
   - [/ssdd-design](#sdd-design)
   - [/ssdd-stories](#sdd-stories)
-  - [/ssdd-tasks](#sdd-tasks)
   - [/ssdd-plan](#sdd-plan)
   - [/ssdd-implement](#sdd-implement)
   - [/ssdd-approve](#sdd-approve)
@@ -42,9 +41,7 @@ SaneSDD is distributed as a [Claude Code plugin](https://docs.anthropic.com/en/d
 /ssdd-approve design <name>         # Review & approve
 /ssdd-stories <epic-name>           # Generate user stories in work channel
 /ssdd-approve stories <name>        # Review & approve
-/ssdd-tasks <epic-name>             # Generate implementation tasks
-/ssdd-approve tasks <name>          # Review & approve
-/ssdd-plan <epic-name>              # Create execution plan
+/ssdd-plan <epic-name>              # Generate tasks & create execution plan
 /ssdd-approve plan <name>           # Review & approve
 /ssdd-implement <epic-name>         # Implement with QA loop
 ```
@@ -337,37 +334,15 @@ so that I can resume shopping later.
 - [ ] **AC_002**: When the user logs back in, then their previously saved cart is restored
 ```
 
-**Next step:** Review the stories, then `/ssdd-approve stories <epic-name>`, then `/ssdd-tasks <epic-name>`
-
----
-
-### `/ssdd-tasks`
-
-**Role:** Tech Lead | **Mode:** Automated | **Prerequisite:** `/ssdd-stories`
-
-Generates implementation tasks from stories and design documents.
-
-```
-/ssdd-tasks EPIC_001
-/ssdd-tasks checkout
-```
-
-**Arguments:** Epic ID or name substring
-
-**What happens:**
-1. Reads stories, feature spec, and design docs
-2. Claude generates task files mapped to specific ACs
-3. Produces `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
-
-**Next step:** Review the tasks, then `/ssdd-approve tasks <epic-name>`, then `/ssdd-plan <epic-name>`
+**Next step:** Review the stories, then `/ssdd-approve stories <epic-name>`, then `/ssdd-plan <epic-name>`
 
 ---
 
 ### `/ssdd-plan`
 
-**Role:** Tech Lead | **Mode:** Automated | **Prerequisite:** `/ssdd-tasks`
+**Role:** Tech Lead | **Mode:** Automated | **Prerequisite:** `/ssdd-stories`
 
-Generates a `development_plan.yaml` that defines the execution order for all stories and tasks.
+Generates implementation tasks from stories and design documents, then produces a sequenced `development_plan.yaml` that defines the execution order for all stories and tasks.
 
 ```
 /ssdd-plan EPIC_001
@@ -377,9 +352,11 @@ Generates a `development_plan.yaml` that defines the execution order for all sto
 **Arguments:** Epic ID or name substring
 
 **What happens:**
-1. Reads all stories and tasks
-2. Claude produces an ordered execution plan respecting dependencies
-3. Produces `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
+1. Reads stories, feature spec, and design docs
+2. Claude generates task files mapped to specific ACs
+3. Produces `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` files
+4. Orders all tasks respecting dependencies into an execution plan
+5. Produces `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
 
 **Output file example** (`development_plan.yaml`):
 ```yaml
@@ -387,20 +364,25 @@ epic: "EPIC_001_checkout_resume"
 generated_at: "2026-02-23T10:00:00"
 stories:
   - story_id: "STORY_001"
+    title: "Save Cart"
     order: 1
     tasks:
       - task_id: "TASK_001"
+        title: "Create cart session table and persistence layer"
         order: 1
         depends_on: []
         estimated_effort: "medium"
       - task_id: "TASK_002"
+        title: "Add cart merge endpoint for returning users"
         order: 2
         depends_on: ["TASK_001"]
         estimated_effort: "small"
   - story_id: "STORY_002"
+    title: "Guest Checkout"
     order: 2
     tasks:
       - task_id: "TASK_001"
+        title: "Allow guest users to proceed to checkout"
         order: 1
 risks:
   - description: "Cart merge logic may be complex"
@@ -408,7 +390,7 @@ risks:
     mitigation: "Start with simple last-write-wins strategy"
 ```
 
-**Next step:** Review the plan, then `/ssdd-approve plan <epic-name>`, then `/ssdd-implement <epic-name>`
+**Next step:** Review the tasks and plan, then `/ssdd-approve plan <epic-name>`, then `/ssdd-implement <epic-name>`
 
 ---
 
@@ -512,14 +494,14 @@ Here is the complete end-to-end workflow for building a feature:
 └─────────────┘     └──────────────┘     └──────────────┘
                                                 │
                     ┌──────────────┐     ┌───────┴──────┐
-                    │ /ssdd-tasks   │ ◀── │ /ssdd-stories │
+                    │  /ssdd-plan   │ ◀── │ /ssdd-stories │
                     │  (TL, auto)  │     │  (PM, auto)  │
                     └──────┬───────┘     └──────────────┘
                            │
-                    ┌──────┴───────┐     ┌───────────────┐
-                    │  /ssdd-plan   │ ──▶ │/ssdd-implement │
-                    │  (TL, auto)  │     │ (multi-role)  │
-                    └──────────────┘     └───────────────┘
+                    ┌──────┴────────┐
+                    │/ssdd-implement │
+                    │ (multi-role)  │
+                    └───────────────┘
 ```
 
 ### Step 0: Initialize the Project
@@ -570,31 +552,19 @@ Automated. Claude (as Product Manager) breaks the feature into work stories with
 - **Outputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md` (one per story)
 - **Review:** Each `story.md` — verify acceptance criteria are testable, complete, and use correct Given-When-Then format
 
-### Step 4: Generate Tasks
-
-```
-/ssdd-tasks checkout_resume
-```
-
-Automated. Claude (as Tech Lead) creates implementation tasks from the stories, each mapped to specific ACs. Verifies complete AC coverage.
-
-- **Inputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`, `.ssdd/work/EPIC_NNN_slug/high_level_design.md`, `.ssdd/design/DOMAIN_NNN_slug/COMP_<name>.md`
-- **Outputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` (one per task)
-- **Review:** Each `TASK_NNN_slug.md` — verify AC mappings are complete (every AC is covered) and task scope is reasonable
-
-### Step 5: Create the Plan
+### Step 4: Generate Tasks & Plan
 
 ```
 /ssdd-plan checkout_resume
 ```
 
-Automated. Claude (as Tech Lead) orders all tasks respecting dependencies into an execution plan with effort estimates and risk assessment.
+Automated. Claude (as Tech Lead) creates implementation tasks from the stories, each mapped to specific ACs. Verifies complete AC coverage. Then orders all tasks respecting dependencies into an execution plan with effort estimates and risk assessment.
 
-- **Inputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`, `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md`
-- **Outputs:** `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
-- **Review:** `development_plan.yaml` — verify story ordering, task dependencies, and effort estimates make sense
+- **Inputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/story.md`, `.ssdd/work/EPIC_NNN_slug/high_level_design.md`, `.ssdd/design/DOMAIN_NNN_slug/COMP_<name>.md`
+- **Outputs:** `.ssdd/work/EPIC_NNN_slug/stories/STORY_NNN/TASK_NNN_slug.md` (one per task), `.ssdd/work/EPIC_NNN_slug/development_plan.yaml`
+- **Review:** Each `TASK_NNN_slug.md` — verify AC mappings are complete (every AC is covered) and task scope is reasonable. `development_plan.yaml` — verify story ordering, task dependencies, and effort estimates make sense
 
-### Step 6: Implement
+### Step 5: Implement
 
 ```
 /ssdd-implement checkout_resume
@@ -692,13 +662,10 @@ ssdd/                                          # Marketplace repository
 │       │   │   ├── SKILL.md
 │       │   │   └── reference/
 │       │   │       └── story-template.md
-│       │   ├── ssdd-tasks/
-│       │   │   ├── SKILL.md
-│       │   │   └── reference/
-│       │   │       └── task-template.md
 │       │   ├── ssdd-plan/
 │       │   │   ├── SKILL.md
 │       │   │   └── reference/
+│       │   │       ├── task-template.md
 │       │   │       └── development-plan-template.yaml
 │       │   ├── ssdd-implement/
 │       │   │   ├── SKILL.md
@@ -869,7 +836,7 @@ SaneSDD assigns Claude a specific role for each phase, controlling its behavior 
 |------|---------------|---------------|
 | **Product Manager** | `/ssdd-feature`, `/ssdd-stories` | Read, Write, Edit, Glob, Grep, Bash |
 | **System Architect** | `/ssdd-design` | Read, Write, Edit, Glob, Grep, Bash |
-| **Tech Lead** | `/ssdd-tasks`, `/ssdd-plan`, remediation | Read, Write, Edit, Glob, Grep, Bash |
+| **Tech Lead** | `/ssdd-plan`, remediation | Read, Write, Edit, Glob, Grep, Bash |
 | **Developer** | `/ssdd-implement` (dev phase) | Read, Write, Edit, Glob, Grep, Bash |
 | **Task QA** | `/ssdd-implement` (QA phase) | Read-only + Bash (no Write/Edit) |
 | **Story QA** | `/ssdd-implement` (QA phase) | Read-only + Bash (no Write/Edit) |
@@ -928,7 +895,7 @@ mkdir -p .roles
 |------|-------------|
 | `.roles/product_manager.md` | Product Manager (`/ssdd-feature`, `/ssdd-stories`) |
 | `.roles/system_architect.md` | System Architect (`/ssdd-design`) |
-| `.roles/tech_lead.md` | Tech Lead (`/ssdd-tasks`, `/ssdd-plan`, remediation) |
+| `.roles/tech_lead.md` | Tech Lead (`/ssdd-plan`, remediation) |
 | `.roles/developer.md` | Developer (`/ssdd-implement`) |
 | `.roles/story_qa.md` | Story QA (`/ssdd-implement`) |
 | `.roles/task_qa.md` | Task QA (`/ssdd-implement`) |
@@ -953,8 +920,8 @@ SaneSDD is designed to be resumable. If a session is interrupted:
 # Run a specific story that failed previously
 /ssdd-implement checkout_resume STORY_002
 
-# Regenerate tasks (creates new files, doesn't overwrite DONE tasks)
-/ssdd-tasks checkout_resume
+# Regenerate tasks and plan (creates new files, doesn't overwrite DONE tasks)
+/ssdd-plan checkout_resume
 ```
 
 ---

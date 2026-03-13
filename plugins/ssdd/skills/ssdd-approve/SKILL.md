@@ -88,7 +88,7 @@ Based on the file type(s) that were approved, determine the next command:
 |-------------------|-----------|
 | `feature.md` | `/ssdd-design <feature-name>` |
 | `high_level_design.md` | `/ssdd-stories <feature-name>` |
-| `story.md` | `/ssdd-tasks <feature-name>` |
+| `story.md` | `/ssdd-plan <feature-name>` |
 | `TASK_*.md` | `/ssdd-plan <feature-name>` |
 | `development_plan.yaml` | `/ssdd-implement <epic-name>` |
 
